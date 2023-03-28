@@ -1,53 +1,63 @@
-import config from '../config';
+import config from "../configs/conf";
 import fs, { PathLike } from "fs";
 import chalk from "chalk";
 import { JSDOM } from "jsdom";
-import db from "../lib/db"
-import format from 'string-format';
+import db from "../lib/db";
+import format from "string-format";
 import { Transform } from "stream";
-import { writeFile } from 'fs/promises';
-import BotsApp from './sidekick';
-import Client from './client';
+import { writeFile } from "fs/promises";
+import BotsApp from "./sidekick";
+import Client from "./client";
 import { MessageType } from "../sidekick/message-type";
-import { GroupParticipant } from '@adiwajshing/baileys';
+import { GroupParticipant } from "@adiwajshing/baileys";
 const { window } = new JSDOM();
-const ERROR_TEMPLATE = db.general.ERROR_TEMPLATE
+const ERROR_TEMPLATE = db.general.ERROR_TEMPLATE;
 
-const getCleanedContact = async (args: string[], client: Client, BotsApp: BotsApp) => {
-    var jidNumber = '';
+const getCleanedContact = async (
+    args: string[],
+    client: Client,
+    BotsApp: BotsApp
+) => {
+    var jidNumber = "";
     var countryCode = config.COUNTRY_CODE;
-    if (parseInt(args[0]) === NaN || args[0][0] === "+" || args[0][0] === "@") {
+    if (
+        Number.isNaN(parseInt(args[0])) ||
+        args[0][0] === "+" ||
+        args[0][0] === "@"
+    ) {
         if (args[0][0] === "@" || args[0][0] === "+") {
             jidNumber = args[0].substring(1, args[0].length + 1);
-        }
-        else {
-            client.sendMessage(BotsApp.chatId,"*Enter valid contact number.* Approved Syntax:\n```1. XXXXXXXXXX``` \n```2. Tag the person``` \n```3. +(YYY)XXXXXXXXXX.``` \n_(YY- Country Code, without zeros)_", MessageType.text);
+        } else {
+            client.sendMessage(
+                BotsApp.chatId!,
+                "*Enter valid contact number.* Approved Syntax:\n```1. XXXXXXXXXX``` \n```2. Tag the person``` \n```3. +(YYY)XXXXXXXXXX.``` \n_(YY- Country Code, without zeros)_",
+                MessageType.text
+            );
             return undefined;
         }
     } else {
-        jidNumber = args[0];       
+        jidNumber = args[0];
     }
 
     if (jidNumber.length < 8 || jidNumber.length > 13) {
         client.sendMessage(
-            BotsApp.chatId,
+            BotsApp.chatId!,
             "*Enter valid contact number.* Approved Syntax:\n```1. XXXXXXXXXX``` \n```2. Tag the person``` \n```3. +(YYY)XXXXXXXXXX.``` \n_(YY- Country Code, without zeros)_",
             MessageType.text
         );
         return undefined;
-    } 
-    else if (jidNumber.length === 10) { 
+    } else if (jidNumber.length === 10) {
         jidNumber = countryCode + jidNumber;
     }
     console.log(jidNumber);
     var isOnWhatsApp = await client.sock.onWhatsApp(jidNumber);
-    if(isOnWhatsApp === undefined){
-        throw "NumberInvalid"; 
+    if (isOnWhatsApp === undefined) {
+        throw "NumberInvalid";
     }
 
     // isOnWhatsApp is not working
     return jidNumber;
-}
+};
 
 const deleteFiles = async (...locations: PathLike[]) => {
     for (let location of locations) {
@@ -70,18 +80,23 @@ const deleteFiles = async (...locations: PathLike[]) => {
 // }
 
 const isMember = async (chatId: string, groupMembers: GroupParticipant[]) => {
-        var isMember = false;
-        if(!(chatId === undefined)){
-            for (const index in groupMembers) {
-                if (chatId == groupMembers[index].id.split("@")[0]) {
-                    isMember = true;
-                }
+    var isMember = false;
+    if (!(chatId === undefined)) {
+        for (const index in groupMembers) {
+            if (chatId == groupMembers[index].id.split("@")[0]) {
+                isMember = true;
             }
         }
-        return isMember;
-}
+    }
+    return isMember;
+};
 
-const handleError = async (err, client, BotsApp, customMessage = "```Something went wrong. The error has been logged in log chats```") => {
+const handleError = async (
+    err: any,
+    client: any,
+    BotsApp: any,
+    customMessage = "```Something went wrong. The error has been logged in log chats```"
+) => {
     console.log(chalk.redBright.bold("[ERROR] " + err));
     let data = {
         commandName: BotsApp.commandName,
@@ -93,27 +108,31 @@ const handleError = async (err, client, BotsApp, customMessage = "```Something w
         isBotGroupAdmin: BotsApp.isBotGroupAdmin,
         isSenderGroupAdmin: BotsApp.isSenderGroupAdmin,
         isSenderSudo: BotsApp.isSenderSUDO,
-        err: err
-    }
+        err: err,
+    };
     client.sendMessage(BotsApp.chatId, customMessage, MessageType.text);
-    client.sendMessage(BotsApp.logGroup, format(ERROR_TEMPLATE, data), MessageType.text);
-}
+    client.sendMessage(
+        BotsApp.logGroup,
+        format(ERROR_TEMPLATE, data),
+        MessageType.text
+    );
+};
 
 const saveBuffer = async (fileName: string, stream: Transform) => {
-    let buffer = Buffer.from([])
+    let buffer = Buffer.from([]);
     for await (const chunk of stream) {
-        buffer = Buffer.concat([buffer, chunk])
+        buffer = Buffer.concat([buffer, chunk]);
     }
     await writeFile(fileName, buffer);
-}
+};
 
 const inputSanitization = {
     handleError: handleError,
     deleteFiles: deleteFiles,
     saveBuffer: saveBuffer,
     getCleanedContact: getCleanedContact,
-    isMember: isMember
-}
+    isMember: isMember,
+};
 
 export default inputSanitization;
 
@@ -131,7 +150,7 @@ export const adminCommands = [
     "setdp",
     "tagall",
     "abl",
-    "rbl"
+    "rbl",
 ];
 
 export const sudoCommands = ["block", "unblock"];

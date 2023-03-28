@@ -1,25 +1,40 @@
-import config from "../config";
-import { DataTypes, InferAttributes, Model, InferCreationAttributes, Sequelize } from "sequelize";
+import config from "../configs/conf";
+import {
+    DataTypes,
+    InferAttributes,
+    Model,
+    InferCreationAttributes,
+    Sequelize,
+} from "sequelize";
 
 const sequelize: Sequelize = config.DATABASE;
 
-class Blacklist extends Model<InferAttributes<Blacklist>, InferCreationAttributes<Blacklist>> {
+class Blacklist extends Model<
+    InferAttributes<Blacklist>,
+    InferCreationAttributes<Blacklist>
+> {
     declare JID: string;
     declare GRPID: string;
 }
 
-Blacklist.init({
-    JID: {
-        type: DataTypes.STRING,
-        allowNull: false,
+Blacklist.init(
+    {
+        JID: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        GRPID: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     },
-    GRPID: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-}, {sequelize, tableName: "Blacklist"});
+    { sequelize, tableName: "Blacklist" }
+);
 
-async function addBlacklistUser(jid: string = "", GrpId: string = "") : Promise<void> {
+async function addBlacklistUser(
+    jid: string = "",
+    GrpId: string = ""
+): Promise<void> {
     Blacklist.findOrCreate({
         where: {
             JID: jid,
@@ -28,7 +43,10 @@ async function addBlacklistUser(jid: string = "", GrpId: string = "") : Promise<
     });
 }
 
-async function getBlacklistUser(jid: string = "", GrpId: string = "") : Promise<boolean> {
+async function getBlacklistUser(
+    jid: string = "",
+    GrpId: string = ""
+): Promise<boolean> {
     var Msg = await Blacklist.findAll({
         where: {
             JID: "",
@@ -65,7 +83,10 @@ async function getBlacklistUser(jid: string = "", GrpId: string = "") : Promise<
     }
 }
 
-async function removeBlacklistUser(jid: string = "", GrpId: string = "") : Promise<boolean | void> {
+async function removeBlacklistUser(
+    jid: string = "",
+    GrpId: string = ""
+): Promise<boolean | void> {
     var Msg = await Blacklist.findAll({
         where: {
             JID: jid,

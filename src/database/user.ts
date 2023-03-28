@@ -1,32 +1,39 @@
-import config from "../config";
-import { DataTypes, InferAttributes, Model, InferCreationAttributes, Sequelize } from "sequelize";
+import config from "../configs/conf";
+import {
+    DataTypes,
+    InferAttributes,
+    Model,
+    InferCreationAttributes,
+} from "sequelize";
 
 const sequelize = config.DATABASE;
 
-class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+class User extends Model {
     declare JID: string;
 }
 
-User.init({
+User.init(
+    {
         JID: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-    }, { sequelize, tableName: "Users"});
+    },
+    { sequelize, tableName: "Users" }
+);
 
 async function addUser(jid: string | null = null) {
-    User.findOrCreate({
+    await User.findOrCreate({
         where: {
-            JID: jid
+            JID: jid,
         },
     });
-
 }
 
 async function getUser(jid: string | null = null) {
     var Msg = await User.findAll({
         where: {
-            JID: jid
+            JID: jid,
         },
     });
 
@@ -40,5 +47,5 @@ async function getUser(jid: string | null = null) {
 export = {
     User: User,
     addUser: addUser,
-    getUser: getUser
+    getUser: getUser,
 };

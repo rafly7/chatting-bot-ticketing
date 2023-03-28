@@ -1,40 +1,52 @@
-import config from "../config";
-import { DataTypes, InferAttributes, Model, InferCreationAttributes, Sequelize } from "sequelize";
+import config from "../configs/conf";
+import {
+    DataTypes,
+    InferAttributes,
+    Model,
+    InferCreationAttributes,
+    Sequelize,
+} from "sequelize";
 
 const sequelize: Sequelize = config.DATABASE;
 
-class Greeting extends Model<InferAttributes<Greeting>, InferCreationAttributes<Greeting>> {
+class Greeting extends Model {
     declare chat: string;
     declare switched: string;
     declare greetingType: string | null;
     declare message: string | null;
 }
 
-Greeting.init({
-    chat: {
-        type: DataTypes.STRING,
-        allowNull: false
+Greeting.init(
+    {
+        chat: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        switched: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: "ON",
+        },
+        greetingType: {
+            type: DataTypes.TEXT,
+        },
+        message: {
+            type: DataTypes.TEXT,
+        },
     },
-    switched: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: "ON",
-    },
-    greetingType: {
-        type: DataTypes.TEXT,
-    },
-    message: {
-        type: DataTypes.TEXT,
-    },
-}, {sequelize, tableName: "Greetings"});
+    { sequelize, tableName: "Greetings" }
+);
 
-async function getMessage(jid: string | null = null, type: string) : Promise<boolean | Greeting> {
+async function getMessage(
+    jid: string | null = null,
+    type: string
+): Promise<boolean | Greeting> {
     var Msg = await Greeting.findAll({
         where: {
             chat: jid,
             greetingType: type,
         },
-        raw: true
+        raw: true,
     });
 
     if (Msg.length < 1) {
@@ -44,13 +56,16 @@ async function getMessage(jid: string | null = null, type: string) : Promise<boo
     }
 }
 
-async function checkSettings(jid: string | null = null, type: string) : Promise<boolean | string> {
+async function checkSettings(
+    jid: string | null = null,
+    type: string
+): Promise<boolean | string> {
     var Msg = await Greeting.findAll({
         where: {
             chat: jid,
             greetingType: type,
         },
-        raw: true
+        raw: true,
     });
 
     if (Msg.length < 1) {
@@ -64,17 +79,26 @@ async function checkSettings(jid: string | null = null, type: string) : Promise<
     }
 }
 
-async function changeSettings(groupJid: string = null, isWorking: string) : Promise<void> {
-    await Greeting.update({
-        switched: isWorking
-    }, {
-        where: {
-            chat: groupJid,
+async function changeSettings(
+    groupJid: string | null,
+    isWorking: string
+): Promise<void> {
+    await Greeting.update(
+        {
+            switched: isWorking,
         },
-    });
+        {
+            where: {
+                chat: groupJid,
+            },
+        }
+    );
 }
 
-async function setWelcome(jid: string = null, text: string = null) : Promise<void> {
+async function setWelcome(
+    jid: string | null,
+    text: string | null
+): Promise<void> {
     Greeting.findOrCreate({
         where: {
             chat: jid,
@@ -88,7 +112,7 @@ async function setWelcome(jid: string = null, text: string = null) : Promise<voi
         },
     });
 }
-async function setGoodbye(jid: string, text: string = null) : Promise<void> {
+async function setGoodbye(jid: string, text: string | null): Promise<void> {
     Greeting.findOrCreate({
         where: {
             chat: jid,
@@ -103,7 +127,10 @@ async function setGoodbye(jid: string, text: string = null) : Promise<void> {
     });
 }
 
-async function deleteMessage(jid: string = null, type: string = null) : Promise<boolean | void> {
+async function deleteMessage(
+    jid: string | null,
+    type: string | null
+): Promise<boolean | void> {
     var Msg = await Greeting.findAll({
         where: {
             chat: jid,

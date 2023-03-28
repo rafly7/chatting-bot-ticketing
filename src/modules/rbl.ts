@@ -13,14 +13,30 @@ module.exports = {
     description: rbl.DESCRIPTION,
     extendedDescription: rbl.EXTENDED_DESCRIPTION,
     demo: { isEnabled: true, text: ".rbl" },
-    async handle(client: Client, chat: proto.IWebMessageInfo, BotsApp: BotsApp, args: string[]): Promise<void> {
+    async handle(
+        client: Client,
+        chat: proto.IWebMessageInfo,
+        BotsApp: BotsApp,
+        args: string[]
+    ): Promise<void> {
         try {
             if (BotsApp.isPm && BotsApp.fromMe) {
                 let PersonToRemoveFromBlacklist = BotsApp.chatId;
-                if (!(await Blacklist.getBlacklistUser(PersonToRemoveFromBlacklist, ""))) {
+                if (
+                    !(await Blacklist.getBlacklistUser(
+                        PersonToRemoveFromBlacklist,
+                        ""
+                    ))
+                ) {
                     client.sendMessage(
                         BotsApp.chatId,
-                        format(rbl.NOT_IN_BLACKLIST, PersonToRemoveFromBlacklist.substring(0, PersonToRemoveFromBlacklist.indexOf("@"))),
+                        format(
+                            rbl.NOT_IN_BLACKLIST,
+                            PersonToRemoveFromBlacklist.substring(
+                                0,
+                                PersonToRemoveFromBlacklist.indexOf("@")
+                            )
+                        ),
                         MessageType.text
                     );
                     return;
@@ -28,7 +44,13 @@ module.exports = {
                 Blacklist.removeBlacklistUser(PersonToRemoveFromBlacklist, "");
                 client.sendMessage(
                     BotsApp.chatId,
-                    format(rbl.PM_ACKNOWLEDGEMENT, PersonToRemoveFromBlacklist.substring(0, PersonToRemoveFromBlacklist.indexOf("@"))),
+                    format(
+                        rbl.PM_ACKNOWLEDGEMENT,
+                        PersonToRemoveFromBlacklist.substring(
+                            0,
+                            PersonToRemoveFromBlacklist.indexOf("@")
+                        )
+                    ),
                     MessageType.text
                 );
                 return;
@@ -52,7 +74,13 @@ module.exports = {
                     ) {
                         client.sendMessage(
                             BotsApp.chatId,
-                            format(rbl.NOT_IN_BLACKLIST, PersonToRemoveFromBlacklist.substring(0, PersonToRemoveFromBlacklist.indexOf("@"))),
+                            format(
+                                rbl.NOT_IN_BLACKLIST,
+                                PersonToRemoveFromBlacklist.substring(
+                                    0,
+                                    PersonToRemoveFromBlacklist.indexOf("@")
+                                )
+                            ),
                             MessageType.text
                         );
                         return;
@@ -63,7 +91,13 @@ module.exports = {
                     );
                     client.sendMessage(
                         BotsApp.chatId,
-                        format(rbl.GRP_ACKNOWLEDGEMENT, PersonToRemoveFromBlacklist.substring(0, PersonToRemoveFromBlacklist.indexOf("@"))),
+                        format(
+                            rbl.GRP_ACKNOWLEDGEMENT,
+                            PersonToRemoveFromBlacklist.substring(
+                                0,
+                                PersonToRemoveFromBlacklist.indexOf("@")
+                            )
+                        ),
                         MessageType.text
                     );
                     return;
@@ -77,7 +111,13 @@ module.exports = {
                     ) {
                         client.sendMessage(
                             BotsApp.chatId,
-                            format(rbl.NOT_IN_BLACKLIST, PersonToRemoveFromBlacklist.substring(0, PersonToRemoveFromBlacklist.indexOf("@"))),
+                            format(
+                                rbl.NOT_IN_BLACKLIST,
+                                PersonToRemoveFromBlacklist.substring(
+                                    0,
+                                    PersonToRemoveFromBlacklist.indexOf("@")
+                                )
+                            ),
                             MessageType.text
                         );
                         return;
@@ -88,7 +128,13 @@ module.exports = {
                     );
                     client.sendMessage(
                         BotsApp.chatId,
-                        format(rbl.GRP_ACKNOWLEDGEMENT, PersonToRemoveFromBlacklist.substring(0, PersonToRemoveFromBlacklist.indexOf("@"))),
+                        format(
+                            rbl.GRP_ACKNOWLEDGEMENT,
+                            PersonToRemoveFromBlacklist.substring(
+                                0,
+                                PersonToRemoveFromBlacklist.indexOf("@")
+                            )
+                        ),
                         MessageType.text
                     );
                     return;

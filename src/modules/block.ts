@@ -2,7 +2,7 @@ import Strings from "../lib/db";
 import Client from "../sidekick/client";
 import { proto } from "@adiwajshing/baileys";
 import BotsApp from "../sidekick/sidekick";
-import { MessageType } from "../sidekick/message-type"
+import { MessageType } from "../sidekick/message-type";
 import inputSanitization from "../sidekick/input-sanitization";
 const Reply = Strings.block;
 
@@ -10,11 +10,17 @@ module.exports = {
     name: "block",
     description: Reply.DESCRIPTION,
     extendedDescription: Reply.EXTENDED_DESCRIPTION,
-    async handle(client: Client, chat: proto.IWebMessageInfo, BotsApp: BotsApp, args: string[]): Promise<void> {
+    async handle(
+        client: Client,
+        chat: proto.IWebMessageInfo,
+        BotsApp: BotsApp,
+        args: string[]
+    ): Promise<void> {
         try {
-            const reply: proto.Message.IExtendedTextMessage = chat.message.extendedTextMessage;
-            var contact: string = "";
-            if(args.length == 0 && !BotsApp.isTextReply){
+            const reply: proto.Message.IExtendedTextMessage | any =
+                chat!.message!.extendedTextMessage;
+            var contact: string | any = "";
+            if (args.length == 0 && !BotsApp.isTextReply) {
                 client.sendMessage(
                     BotsApp.chatId,
                     Reply.MESSAGE_NOT_TAGGED,
@@ -42,7 +48,7 @@ module.exports = {
                 return;
             }
 
-            if(contact === ""){
+            if (contact === "") {
                 client.sendMessage(
                     BotsApp.chatId,
                     Reply.MESSAGE_NOT_TAGGED,

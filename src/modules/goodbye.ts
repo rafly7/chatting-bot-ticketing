@@ -15,7 +15,12 @@ module.exports = {
         isEnabled: true,
         text: [".goodbye", ".goodbye off", ".goodbye delete"],
     },
-    async handle(client: Client, chat: proto.IWebMessageInfo, BotsApp: BotsApp, args: string[]): Promise<void> {
+    async handle(
+        client: Client,
+        chat: proto.IWebMessageInfo,
+        BotsApp: BotsApp,
+        args: string[]
+    ): Promise<void> {
         try {
             if (!BotsApp.isGroup) {
                 client.sendMessage(
@@ -27,7 +32,10 @@ module.exports = {
             }
             if (args.length == 0) {
                 await client.getGroupMetaData(BotsApp.chatId, BotsApp);
-                var Msg: any = await Greetings.getMessage(BotsApp.chatId, "goodbye");
+                var Msg: any = await Greetings.getMessage(
+                    BotsApp.chatId,
+                    "goodbye"
+                );
                 try {
                     var enabled = await Greetings.checkSettings(
                         BotsApp.chatId,

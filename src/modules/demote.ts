@@ -10,7 +10,12 @@ module.exports = {
     name: "demote",
     description: REPLY.DESCRIPTION,
     extendedDescription: REPLY.EXTENDED_DESCRIPTION,
-    async handle(client: Client, chat: proto.IWebMessageInfo, BotsApp: BotsApp, args: string[]): Promise<void> {
+    async handle(
+        client: Client,
+        chat: proto.IWebMessageInfo,
+        BotsApp: BotsApp,
+        args: string[]
+    ): Promise<void> {
         try {
             if (!BotsApp.isGroup) {
                 client.sendMessage(
@@ -38,9 +43,9 @@ module.exports = {
                 return;
             }
 
-            const reply = chat.message.extendedTextMessage;
+            const reply = chat.message!.extendedTextMessage;
             if (BotsApp.isTextReply) {
-                var contact = reply.contextInfo.participant.split("@")[0];
+                var contact = reply!.contextInfo!.participant!.split("@")[0];
             } else {
                 var contact = await inputSanitization.getCleanedContact(
                     args,
@@ -57,7 +62,7 @@ module.exports = {
             for (const index in BotsApp.groupMembers) {
                 if (contact == BotsApp.groupMembers[index].id.split("@")[0]) {
                     console.log(BotsApp.groupMembers[index]);
-                    owner = BotsApp.groupMembers[index].admin === 'superadmin';
+                    owner = BotsApp.groupMembers[index].admin === "superadmin";
                     admin = BotsApp.groupMembers[index].admin != undefined;
                 }
             }
@@ -74,7 +79,11 @@ module.exports = {
             if (isMember) {
                 if (admin) {
                     const arr = [contact + "@s.whatsapp.net"];
-                    await client.sock.groupParticipantsUpdate(BotsApp.chatId, arr, 'demote');
+                    await client.sock.groupParticipantsUpdate(
+                        BotsApp.chatId,
+                        arr,
+                        "demote"
+                    );
                     client.sendMessage(
                         BotsApp.chatId,
                         "*" + contact + " is demoted from admin*",

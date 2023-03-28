@@ -2,10 +2,11 @@
     "name": "botsapp",
     "version": "1.0.0",
     "description": "",
-    "main": "main.js",
+    "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "tsc && node --max-old-space-size=512 --optimize_for_size dist/BotsApp.js"
+        "build": "rimraf ./dist && tsc",
+        "start": "npm run build && node --max-old-space-size=512 --optimize_for_size dist/index.js"
     },
     "author": "Prince Mendiratta",
     "license": "ISC",
@@ -31,21 +32,24 @@
         "pino": "^7.11.0",
         "qrcode-reader": "^1.0.4",
         "qrcode-terminal": "^0.12.0",
-        "sequelize": "^6.7.0",
+        "sequelize": "^6.30.0",
         "simple-git": "^2.47.0",
         "songlyrics": "^2.2.4",
         "sqlite3": "^5.0.2",
         "string-format": "^2.0.0",
-        "typescript": "^4.6.4",
         "unofficial-carbon-now": "^1.0.3",
         "urban-dictionary": "^3.0.2",
         "yt-search": "^2.10.1",
         "ytdl-core": "^4.11.2"
     },
     "devDependencies": {
+        "@types/jsdom": "^21.1.1",
         "@types/node": "^17.0.32",
+        "@types/sequelize": "^4.28.14",
         "@types/string-format": "^2.0.0",
         "@types/urban-dictionary": "^3.0.0",
-        "@types/ws": "^8.5.3"
+        "@types/ws": "^8.5.3",
+        "rimraf": "^4.4.1",
+        "typescript": "^5.0.2"
     }
 }
