@@ -1,18 +1,18 @@
 import { GroupParticipant } from "@adiwajshing/baileys";
 
 class BotsApp {
-    declare mimeType: string | any;
-    declare type: string | any;
-    declare body: string | any;
-    declare commandName: string;
-    declare chatId: string | any;
+    declare mimeType: string | null;
+    declare type: string | null;
+    declare body: string | null | undefined;
+    declare commandName: string | null | undefined;
+    declare chatId: string | null | undefined;
     declare owner: string;
     declare logGroup: string;
-    declare sender: string | any;
-    declare groupName: string | any;
-    declare groupMembers: GroupParticipant[] | any;
-    declare groupAdmins: string[] | any;
-    declare groupId: string | any;
+    declare sender: string | null | undefined;
+    declare groupName: string;
+    declare groupMembers: GroupParticipant[];
+    declare groupAdmins: string[];
+    declare groupId: string;
     declare replyMessageId: string | any;
     declare replyMessage: string | any;
     declare imageCaption: string | any;

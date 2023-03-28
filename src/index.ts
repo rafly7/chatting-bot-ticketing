@@ -121,15 +121,11 @@ setInterval(() => {
     );
 
     // let firstInit: boolean = true;
-    // await Message.create({
-    //     sessionId: "asdasdasd",
-    //     remoteJid: "adada",
-    //     id: "adad",
-    // });
-    // await Message.findOrCreate({
-    //     where: {},
-    // });
-
+    const a = await Message.create({
+        sessionId: "asdasdasd",
+        remoteJid: "adada",
+        id: "adad",
+    });
     let firstInit: boolean = true;
 
     const startSock = async () => {
@@ -243,8 +239,8 @@ setInterval(() => {
                     if (BotsApp.isCmd) {
                         let isBlacklist: boolean =
                             await Blacklist.getBlacklistUser(
-                                BotsApp.sender,
-                                BotsApp.chatId
+                                BotsApp.sender!,
+                                BotsApp.chatId!
                             );
                         const cleared: boolean | void = await clearance(
                             BotsApp,
@@ -269,11 +265,13 @@ setInterval(() => {
                                 `[INFO] ${BotsApp.commandName} command executed.`
                             )
                         );
-                        const command = commandHandler.get(BotsApp.commandName);
-                        var args = BotsApp.body.trim().split(/\s+/).slice(1);
+                        const command = commandHandler.get(
+                            BotsApp.commandName!
+                        );
+                        let args = BotsApp.body?.trim().split(/\s+/).slice(1);
                         if (!command) {
                             client.sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
                                 MessageType.text
                             );

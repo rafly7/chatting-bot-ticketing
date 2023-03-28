@@ -37,7 +37,7 @@
         "songlyrics": "^2.2.4",
         "sqlite3": "^5.0.2",
         "string-format": "^2.0.0",
-        "unofficial-carbon-now": "^1.0.3",
+        "unofficial-carbon-now": "^1.0.6",
         "urban-dictionary": "^3.0.2",
         "yt-search": "^2.10.1",
         "ytdl-core": "^4.11.2"

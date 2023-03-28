@@ -68,20 +68,19 @@ const data = {
     //     MESSAGE_NOT_TAGGED: "```Tag a message or enter a number to proceed.```",
     //     NOT_BLOCK_BOT: "```Bot can not block itself```",
     // },
-    // carbon: {
-    //     DESCRIPTION: "Convert text/code to a carbon image.",
-    //     EXTENDED_DESCRIPTION:
-    //         "```This module can be used to convert text/code into carbon images.\n\nExample Usage,```\n    *.carbon <text>* \n    *.carbon*  ```and reply to a text message.\n\nUse the -t flag after```  *.carbon*  ```to get the list of themes availble.\nIn order to specify the theme, use```  *.carbon <text> -t <theme>* .",
-    //     NO_INPUT:
-    //         "```No input provided.\nPlease use the command```  *.carbon <text>*  ```or reply to a text message with```  *.carbon*  ```to carbonize the text.```",
-    //     CARBONIZING:
-    //         "```Converting your text into a code snippet. Please wait...```",
-    //     OUTPUT:
-    //         "*<< Here's your carbon image! >>*\n```Carbonized by BotsApp\nColour Scheme: {}```",
-    //     INVALID_REPLY: "```The replied message should be text.```",
-    //     INVALID_THEME:
-    //         "```Please enter a valid theme.\nDo note that theme names are```  *case sensitive*.",
-    // },
+    carbon: {
+        DESCRIPTION: "Convert text/code to a carbon image.",
+        EXTENDED_DESCRIPTION:
+            "```This module can be used to convert text/code into carbon images.\n\nExample Usage,```\n    *.carbon <text>* \n    *.carbon*  ```and reply to a text message.\n\nUse the -t flag after```  *.carbon*  ```to get the list of themes availble.\nIn order to specify the theme, use```  *.carbon <text> -t <theme>* .",
+        NO_INPUT:
+            "```No input provided.\nPlease use the command```  *.carbon <text>*  ```or reply to a text message with```  *.carbon*  ```to carbonize the text.```",
+        CARBONIZING:
+            "```Converting your text into a code snippet. Please wait...```",
+        OUTPUT: "*<< Here's your carbon image! >>*\n```Carbonized by BotsApp\nColour Scheme: {}```",
+        INVALID_REPLY: "```The replied message should be text.```",
+        INVALID_THEME:
+            "```Please enter a valid theme.\nDo note that theme names are```  *case sensitive*.",
+    },
     // create: {
     //     DESCRIPTION: "Create a new group with the person replied to",
     //     EXTENDED_DESCRIPTION:
@@ -146,17 +145,16 @@ const data = {
     //     ERROR_MSG: "```Enter a valid username.```",
     //     FETCHING: "```Fetching user details from GitHub. Please wait...```",
     // },
-    // help: {
-    //     DESCRIPTION: "Get the command list and info on modules",
-    //     EXTENDED_DESCRIPTION:
-    //         "This module is used to get info on other modules and their triggers.",
-    //     HEAD: "🌀 *BotsApp Menu* 🌀\n```Use .help command for detailed info on a module.```",
-    //     TEMPLATE: "\n\n🤖 *Command* - ```{}```\n💡 *Info* - ```{}```",
-    //     COMMAND_INTERFACE: "🌀 *BotsApp Command Interface* 🌀\n\n",
-    //     COMMAND_INTERFACE_TEMPLATE: "💠 *Triggers -* ```{}```\n📚 *Info -* {}",
-    //     FOOTER:
-    //         "```\n\nClick on the button below to get a preview of the plugin.```",
-    // },
+    help: {
+        DESCRIPTION: "Get the command list and info on modules",
+        EXTENDED_DESCRIPTION:
+            "This module is used to get info on other modules and their triggers.",
+        HEAD: "🌀 *BotsApp Menu* 🌀\n```Use .help command for detailed info on a module.```",
+        TEMPLATE: "\n\n🤖 *Command* - ```{}```\n💡 *Info* - ```{}```",
+        COMMAND_INTERFACE: "🌀 *BotsApp Command Interface* 🌀\n\n",
+        COMMAND_INTERFACE_TEMPLATE: "💠 *Triggers -* ```{}```\n📚 *Info -* {}",
+        FOOTER: "```\n\nClick on the button below to get a preview of the plugin.```",
+    },
     // invite: {
     //     DESCRIPTION: "Module to create group invite link",
     //     EXTENDED_DESCRIPTION:

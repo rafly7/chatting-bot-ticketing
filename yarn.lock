@@ -3790,7 +3790,7 @@ universalify@^0.1.2:
   resolved "https://registry.npmjs.org/universalify/-/universalify-0.1.2.tgz"
   integrity sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==
 
-unofficial-carbon-now@^1.0.3:
+unofficial-carbon-now@^1.0.6:
   version "1.0.6"
   resolved "https://registry.npmjs.org/unofficial-carbon-now/-/unofficial-carbon-now-1.0.6.tgz"
   integrity sha512-6u2k3TOkrTckk0uxXfMFGuNQPWu2tPFUjHlvhKVmQhSEdQJcy8Dd2HeqCuKWx+pd9LXjbmZqkF6A/if9jS9aIQ==
