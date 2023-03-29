@@ -25,7 +25,7 @@ module.exports = {
             if (!BotsApp.isGroup) {
                 client
                     .sendMessage(
-                        BotsApp.chatId,
+                        BotsApp.chatId!,
                         WELCOME.NOT_A_GROUP,
                         MessageType.text
                     )
@@ -34,7 +34,7 @@ module.exports = {
                     );
                 return;
             }
-            await client.getGroupMetaData(BotsApp.chatId, BotsApp);
+            await client.getGroupMetaData(BotsApp.chatId!, BotsApp);
             var Msg: any = await Greetings.getMessage(
                 BotsApp.chatId,
                 "welcome"
@@ -48,7 +48,7 @@ module.exports = {
                     if (enabled === false || enabled === undefined) {
                         client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.SET_WELCOME_FIRST,
                                 MessageType.text
                             )
@@ -63,7 +63,7 @@ module.exports = {
                     } else if (enabled === "OFF") {
                         await client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.CURRENTLY_DISABLED,
                                 MessageType.text
                             )
@@ -76,7 +76,7 @@ module.exports = {
                             );
                         await client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 Msg.message,
                                 MessageType.text
                             )
@@ -92,7 +92,7 @@ module.exports = {
 
                     await client
                         .sendMessage(
-                            BotsApp.chatId,
+                            BotsApp.chatId!,
                             WELCOME.CURRENTLY_ENABLED,
                             MessageType.text
                         )
@@ -101,7 +101,7 @@ module.exports = {
                         );
                     await client
                         .sendMessage(
-                            BotsApp.chatId,
+                            BotsApp.chatId!,
                             Msg.message,
                             MessageType.text
                         )
@@ -120,12 +120,12 @@ module.exports = {
                     ) {
                         let switched = "OFF";
                         await Greetings.changeSettings(
-                            BotsApp.chatId,
+                            BotsApp.chatId!,
                             switched
                         );
                         client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.GREETINGS_UNENABLED,
                                 MessageType.text
                             )
@@ -145,12 +145,12 @@ module.exports = {
                     ) {
                         let switched = "ON";
                         await Greetings.changeSettings(
-                            BotsApp.chatId,
+                            BotsApp.chatId!,
                             switched
                         );
                         client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.GREETINGS_ENABLED,
                                 MessageType.text
                             )
@@ -166,13 +166,13 @@ module.exports = {
                     }
                     if (args[0] === "delete") {
                         var Msg: any = await Greetings.deleteMessage(
-                            BotsApp.chatId,
+                            BotsApp.chatId!,
                             "welcome"
                         );
                         if (Msg === false || Msg === undefined) {
                             client
                                 .sendMessage(
-                                    BotsApp.chatId,
+                                    BotsApp.chatId!,
                                     WELCOME.SET_WELCOME_FIRST,
                                     MessageType.text
                                 )
@@ -188,7 +188,7 @@ module.exports = {
 
                         await client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.WELCOME_DELETED,
                                 MessageType.text
                             )
@@ -202,15 +202,15 @@ module.exports = {
 
                         return;
                     }
-                    let text = BotsApp.body.replace(
+                    let text = BotsApp.body?.replace(
                         BotsApp.body[0] + BotsApp.commandName + " ",
                         ""
                     );
                     if (Msg === false || Msg === undefined) {
-                        await Greetings.setWelcome(BotsApp.chatId, text);
+                        await Greetings.setWelcome(BotsApp.chatId!, text!);
                         await client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.WELCOME_UPDATED,
                                 MessageType.text
                             )
@@ -225,13 +225,13 @@ module.exports = {
                         return;
                     } else {
                         await Greetings.deleteMessage(
-                            BotsApp.chatId,
+                            BotsApp.chatId!,
                             "welcome"
                         );
-                        await Greetings.setWelcome(BotsApp.chatId, text);
+                        await Greetings.setWelcome(BotsApp.chatId!, text!);
                         await client
                             .sendMessage(
-                                BotsApp.chatId,
+                                BotsApp.chatId!,
                                 WELCOME.WELCOME_UPDATED,
                                 MessageType.text
                             )

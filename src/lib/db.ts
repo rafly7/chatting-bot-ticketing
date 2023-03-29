@@ -68,19 +68,19 @@ const data = {
     //     MESSAGE_NOT_TAGGED: "```Tag a message or enter a number to proceed.```",
     //     NOT_BLOCK_BOT: "```Bot can not block itself```",
     // },
-    carbon: {
-        DESCRIPTION: "Convert text/code to a carbon image.",
-        EXTENDED_DESCRIPTION:
-            "```This module can be used to convert text/code into carbon images.\n\nExample Usage,```\n    *.carbon <text>* \n    *.carbon*  ```and reply to a text message.\n\nUse the -t flag after```  *.carbon*  ```to get the list of themes availble.\nIn order to specify the theme, use```  *.carbon <text> -t <theme>* .",
-        NO_INPUT:
-            "```No input provided.\nPlease use the command```  *.carbon <text>*  ```or reply to a text message with```  *.carbon*  ```to carbonize the text.```",
-        CARBONIZING:
-            "```Converting your text into a code snippet. Please wait...```",
-        OUTPUT: "*<< Here's your carbon image! >>*\n```Carbonized by BotsApp\nColour Scheme: {}```",
-        INVALID_REPLY: "```The replied message should be text.```",
-        INVALID_THEME:
-            "```Please enter a valid theme.\nDo note that theme names are```  *case sensitive*.",
-    },
+    // carbon: {
+    //     DESCRIPTION: "Convert text/code to a carbon image.",
+    //     EXTENDED_DESCRIPTION:
+    //         "```This module can be used to convert text/code into carbon images.\n\nExample Usage,```\n    *.carbon <text>* \n    *.carbon*  ```and reply to a text message.\n\nUse the -t flag after```  *.carbon*  ```to get the list of themes availble.\nIn order to specify the theme, use```  *.carbon <text> -t <theme>* .",
+    //     NO_INPUT:
+    //         "```No input provided.\nPlease use the command```  *.carbon <text>*  ```or reply to a text message with```  *.carbon*  ```to carbonize the text.```",
+    //     CARBONIZING:
+    //         "```Converting your text into a code snippet. Please wait...```",
+    //     OUTPUT: "*<< Here's your carbon image! >>*\n```Carbonized by BotsApp\nColour Scheme: {}```",
+    //     INVALID_REPLY: "```The replied message should be text.```",
+    //     INVALID_THEME:
+    //         "```Please enter a valid theme.\nDo note that theme names are```  *case sensitive*.",
+    // },
     // create: {
     //     DESCRIPTION: "Create a new group with the person replied to",
     //     EXTENDED_DESCRIPTION:
@@ -386,26 +386,27 @@ const data = {
     //         "*Temperature:* {tempInC} °C | {tempInF} °F\n*Min Temp:* {minTempInC} °C | {minTempInF} °F\n*Max Temp:* {maxTempInC} °C | {maxTempInF} °F\n*Humidity:* {humidity}%\n*Wind:* {windSpeedInkmph} kmph | {windSpeedInmph} mph , {degree}°\n*Sunrise:* {sunriseTime}\n*Sunset:* {sunsetTime}\n\n\n*{weatherDescription}*\n{cityName} , {country}\n{dateAndTime}",
     //     CITY_NAME_REQUIRED:
     //         "```Please mention the city name to search weather data.```",
-    //     ERROR_OCCURED: "```Woops, cannot process this request. Try again later.```",
+    //     ERROR_OCCURED:
+    //         "```Woops, cannot process this request. Try again later.```",
     //     DOWNLOADING: "```Processing data. Please wait...```",
     //     NOT_FOUND:
     //         "```City not found. Please recheck the spelling and adhere to syntax.```",
     // },
-    // welcome: {
-    //     DESCRIPTION: "Welcome new members to the group with a custom message.",
-    //     EXTENDED_DESCRIPTION:
-    //         "```New members of a group chat will be welcomed with a message. It can be an image, video, gif with caption or just a text message.\n\nUse this module to either set, update or delete the existing message.\n\nThe welcome option can be disabled but saved using the ```  *.welcome  off*  ```command. In order to delete the existing message, use```  *.welcome  delete*.  ```Do note, the welcome option is still enabled after you use the delete option.```",
-    //     NOT_A_GROUP: "```This command is only applicable in a group chat.```",
-    //     SET_WELCOME_FIRST: "```Set a welcome message first.```",
-    //     GREETINGS_ENABLED: "```Welcome message has been enabled.```",
-    //     GREETINGS_UNENABLED: "```Welcome message has been disabled.```",
-    //     CURRENTLY_ENABLED:
-    //         "```Greetings are enabled: True \nCurrently greeting new members with:```",
-    //     CURRENTLY_DISABLED:
-    //         "```Greetings are enabled: False \nCurrently greeting new members with:```",
-    //     WELCOME_DELETED: "```Welcome message deleted.```",
-    //     WELCOME_UPDATED: "```Welcome message updated and enabled.```",
-    // },
+    welcome: {
+        DESCRIPTION: "Welcome new members to the group with a custom message.",
+        EXTENDED_DESCRIPTION:
+            "```New members of a group chat will be welcomed with a message. It can be an image, video, gif with caption or just a text message.\n\nUse this module to either set, update or delete the existing message.\n\nThe welcome option can be disabled but saved using the ```  *.welcome  off*  ```command. In order to delete the existing message, use```  *.welcome  delete*.  ```Do note, the welcome option is still enabled after you use the delete option.```",
+        NOT_A_GROUP: "```This command is only applicable in a group chat.```",
+        SET_WELCOME_FIRST: "```Set a welcome message first.```",
+        GREETINGS_ENABLED: "```Welcome message has been enabled.```",
+        GREETINGS_UNENABLED: "```Welcome message has been disabled.```",
+        CURRENTLY_ENABLED:
+            "```Greetings are enabled: True \nCurrently greeting new members with:```",
+        CURRENTLY_DISABLED:
+            "```Greetings are enabled: False \nCurrently greeting new members with:```",
+        WELCOME_DELETED: "```Welcome message deleted.```",
+        WELCOME_UPDATED: "```Welcome message updated and enabled.```",
+    },
     // goodbye: {
     //     DESCRIPTION: "A goodbye message for group chat whenever someone leaves.",
     //     EXTENDED_DESCRIPTION:
@@ -421,15 +422,15 @@ const data = {
     //     GOODBYE_DELETED: "```Goodbye message deleted.```",
     //     GOODBYE_UPDATED: "```Goodbye message updated and enabled.```",
     // },
-    // yt: {
-    //     DESCRIPTION: "Get recommendations and links from Youtube",
-    //     EXTENDED_DESCRIPTION:
-    //         "```Get the first 10 recommendations from YouTube with their authorname, timestamp and link. Mention the keywords that are required to be searched along with the command.```",
-    //     REPLY: "```Obtaining the recommendations...```",
-    //     NO_VIDEOS: "```No videos could be found.```",
-    //     ENTER_INPUT:
-    //         "```Please enter the query you want to search for. Use the``` *.help yt* ```command for more info.```",
-    // },
+    yt: {
+        DESCRIPTION: "Get recommendations and links from Youtube",
+        EXTENDED_DESCRIPTION:
+            "```Get the first 10 recommendations from YouTube with their authorname, timestamp and link. Mention the keywords that are required to be searched along with the command.```",
+        REPLY: "```Obtaining the recommendations...```",
+        NO_VIDEOS: "```No videos could be found.```",
+        ENTER_INPUT:
+            "```Please enter the query you want to search for. Use the``` *.help yt* ```command for more info.```",
+    },
 };
 
 export default data;

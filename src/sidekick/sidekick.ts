@@ -9,10 +9,10 @@ class BotsApp {
     declare owner: string;
     declare logGroup: string;
     declare sender: string | null | undefined;
-    declare groupName: string;
-    declare groupMembers: GroupParticipant[];
-    declare groupAdmins: string[];
-    declare groupId: string;
+    declare groupName: string | null | undefined;
+    declare groupMembers: GroupParticipant[] | null | undefined;
+    declare groupAdmins: string[] | null;
+    declare groupId: string | null | undefined;
     declare replyMessageId: string | any;
     declare replyMessage: string | any;
     declare imageCaption: string | any;
@@ -23,8 +23,8 @@ class BotsApp {
     declare fromMe: boolean | any;
     declare isGroup: boolean;
     declare isPm: boolean;
-    declare isBotGroupAdmin: boolean;
-    declare isSenderGroupAdmin: boolean;
+    declare isBotGroupAdmin: boolean | undefined;
+    declare isSenderGroupAdmin: boolean | undefined;
     declare isSenderSUDO: boolean;
     declare isImage: boolean;
     declare isReplyImage: boolean;

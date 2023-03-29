@@ -54,38 +54,38 @@ setInterval(() => {
 
     let commandHandler: Map<string, Command> = new Map();
 
-    // console.log(
-    //     chalk.yellowBright.bold("[INFO] Installing Plugins... Please wait.")
-    // );
-    // let moduleFiles: string[] = fs
-    //     .readdirSync(join(__dirname, "modules"))
-    //     .filter((file) => file.endsWith(".js"));
-    // for (let file of moduleFiles) {
-    //     try {
-    //         const command: Command = require(join(
-    //             __dirname,
-    //             "modules",
-    //             `${file}`
-    //         ));
-    //         console.log(
-    //             chalk.magentaBright("[INFO] Successfully imported module"),
-    //             chalk.cyanBright.bold(`${file}`)
-    //         );
-    //         commandHandler.set(command.name, command);
-    //     } catch (error) {
-    //         console.log(
-    //             chalk.blueBright.bold("[INFO] Could not import module"),
-    //             chalk.redBright.bold(`${file}`)
-    //         );
-    //         console.log(`[ERROR] `, error);
-    //         continue;
-    //     }
-    // }
-    // console.log(
-    //     chalk.green.bold(
-    //         "[INFO] Plugins Installed Successfully. The bot is ready to use."
-    //     )
-    // );
+    console.log(
+        chalk.yellowBright.bold("[INFO] Installing Plugins... Please wait.")
+    );
+    let moduleFiles: string[] = fs
+        .readdirSync(join(__dirname, "modules"))
+        .filter((file) => file.endsWith(".js"));
+    for (let file of moduleFiles) {
+        try {
+            const command: Command = require(join(
+                __dirname,
+                "modules",
+                `${file}`
+            ));
+            console.log(
+                chalk.magentaBright("[INFO] Successfully imported module"),
+                chalk.cyanBright.bold(`${file}`)
+            );
+            commandHandler.set(command.name, command);
+        } catch (error) {
+            console.log(
+                chalk.blueBright.bold("[INFO] Could not import module"),
+                chalk.redBright.bold(`${file}`)
+            );
+            console.log(`[ERROR] `, error);
+            continue;
+        }
+    }
+    console.log(
+        chalk.green.bold(
+            "[INFO] Plugins Installed Successfully. The bot is ready to use."
+        )
+    );
     console.log(chalk.yellowBright.bold("[INFO] Connecting to Database."));
     try {
         await sequelize.authenticate();
@@ -235,7 +235,7 @@ setInterval(() => {
                 for (const msg of upsert.messages) {
                     let chat: proto.IWebMessageInfo = msg;
                     let BotsApp: BotsApp = await resolve(chat, sock);
-                    // console.log(BotsApp);
+                    console.log(BotsApp);
                     if (BotsApp.isCmd) {
                         let isBlacklist: boolean =
                             await Blacklist.getBlacklistUser(
@@ -269,6 +269,7 @@ setInterval(() => {
                             BotsApp.commandName!
                         );
                         let args = BotsApp.body?.trim().split(/\s+/).slice(1);
+                        console.log(args);
                         if (!command) {
                             client.sendMessage(
                                 BotsApp.chatId!,

@@ -101,14 +101,14 @@ class Client {
             ? groupMetadata?.participants
             : null;
         BotsApp.groupAdmins = BotsApp.isGroup
-            ? getGroupAdmins(BotsApp.groupMembers)
+            ? getGroupAdmins(BotsApp.groupMembers!)
             : null;
         BotsApp.groupId = BotsApp.isGroup ? groupMetadata?.id : null;
         BotsApp.isBotGroupAdmin = BotsApp.isGroup
-            ? BotsApp.groupAdmins.includes(BotsApp.owner)
+            ? BotsApp.groupAdmins?.includes(BotsApp.owner)
             : false;
         BotsApp.isSenderGroupAdmin = BotsApp.isGroup
-            ? BotsApp.groupAdmins.includes(BotsApp.sender)
+            ? BotsApp.groupAdmins?.includes(BotsApp.sender!)
             : false;
     }
 }
