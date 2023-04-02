@@ -7,7 +7,11 @@ import makeWASocket, {
     makeInMemoryStore,
     WASocket,
     proto,
-    Contact,
+    useMultiFileAuthState,
+    SignalDataTypeMap,
+    initAuthCreds,
+    SignalDataSet,
+    jidNormalizedUser,
 } from "@adiwajshing/baileys";
 // @ts-ignore
 import { useRemoteFileAuthState } from "./core/dbAuth";
@@ -16,7 +20,7 @@ import { join } from "path";
 import config from "./configs/conf";
 import { banner } from "./lib/banner";
 import chalk from "chalk";
-import Greetings from "./database/greeting";
+// import Greetings from "./database/greeting";
 import STRINGS from "./lib/db";
 import Blacklist from "./database/blacklist";
 import clearance from "./core/clearance";
@@ -31,6 +35,14 @@ import { MessageType } from "./sidekick/message-type";
 import fsProm from "fs/promises";
 import Message from "./models/message";
 import { useSession } from "./core/session";
+import Session from "./models/session";
+import { Greeting } from "./database/greeting";
+import Handlers from "./handlers/handlers";
+import HandlersSock from "./handlers/handlers";
+import Chat from "./models/chat";
+import GroupMetadata from "./models/group_metadata";
+import Contact from "./models/contact";
+// import { useSession } from "./core/session";
 
 const sequelize: Sequelize = config.DATABASE;
 const GENERAL: any = STRINGS.general;
@@ -38,7 +50,7 @@ const msgRetryCounterMap: MessageRetryMap = {};
 const logger: Logger = P({
     timestamp: () => `,"time":"${new Date().toJSON()}"`,
 }).child({});
-logger.level = "fatal";
+logger.level = "error";
 
 // the store maintains the data of the WA connection in memory
 // can be written out to a file & read from it
@@ -105,14 +117,14 @@ setInterval(() => {
         )
     );
 
-    const cek = await fsProm
-        .stat(join("BotsApp.db"))
-        .then(() => true)
-        .catch(() => false);
-    console.log(cek);
-    if (cek) {
-        await Message.drop();
-    }
+    // const cek = await fsProm
+    //     .stat(join("BotsApp.db"))
+    //     .then(() => true)
+    //     .catch(() => false);
+    // console.log(cek);
+    // if (cek) {
+    //     await Message.drop();
+    // }
     await sequelize.sync();
     console.log(
         chalk.greenBright.bold(
@@ -121,26 +133,62 @@ setInterval(() => {
     );
 
     // let firstInit: boolean = true;
-    const a = await Message.create({
-        sessionId: "asdasdasd",
-        remoteJid: "adada",
-        id: "adad",
-    });
+    // const a = await Message.create({
+    //     sessionId: "asdasdasd",
+    //     remoteJid: "adada",
+    //     id: "adad",
+    // });
     let firstInit: boolean = true;
 
     const startSock = async () => {
         // @ts-ignore
-        const { state, saveCreds } = await useRemoteFileAuthState();
+        // const { state, saveCreds } = await useMultiFileAuthState(
+        //     "auth_info_baileys_deleted"
+        // );
+        // const { state, saveCreds } = await useRemoteFileAuthState();
+        const { state, saveCreds } = await useSession("rafly");
         const { version, isLatest } = await fetchLatestBaileysVersion();
+        console.log(">>>ISLATEST>>>");
+        console.log(isLatest);
+        console.log(version);
+        console.log(">>>ISLATEST>>>");
         const sock: WASocket = makeWASocket({
             version,
             logger,
             printQRInTerminal: true,
+            // auth: state,
             auth: state,
-            browser: ["BotsApp", "Chrome", "4.0.0"],
+            // auth: {
+            //     keys: {
+            //         get: async (
+            //             type: keyof SignalDataTypeMap,
+            //             ids: string[]
+            //         ) => {
+            //             const data: {
+            //                 [key: string]: SignalDataTypeMap[typeof type];
+            //             } = {};
+            //             //   await Promise.all(
+            //             //     ids.map(async (id) => {
+            //             //       let value = await read(`${type}-${id}`);
+            //             //       if (type === 'app-state-sync-key' && value) {
+            //             //         value = proto.Message.AppStateSyncKeyData.fromObject(value);
+            //             //       }
+            //             //       data[id] = value;
+            //             //     })
+            //             //   );
+            //             return data;
+            //         },
+            //         set: async (data: SignalDataSet): Promise<void> => {},
+            //     },
+            //     creds: initAuthCreds(),
+            // },
+            browser: ["Samantha-Ticketing", "Chrome", "4.0.0"],
             msgRetryCounterMap,
             // implement to handle retries
-            getMessage: async (key) => {
+            getMessage: async (key: any) => {
+                console.log(">>>>>KEY>>>>>");
+                console.log(key);
+                console.log(">>>>>KEY>>>>>");
                 if (store) {
                     const msg = await store.loadMessage(
                         key.remoteJid!,
@@ -150,17 +198,19 @@ setInterval(() => {
                     return msg?.message || undefined;
                 }
 
-                return {
-                    conversation: "-pls ignore-",
-                };
+                // only if store is present
+                return proto.Message.fromObject({});
             },
         });
 
         store?.bind(sock.ev);
 
         let client: Client = new Client(sock, store);
-
+        new HandlersSock("rafly", sock.ev);
         sock.ev.process(async (events) => {
+            //         console.log(">>>>>>11>>>>>>>");
+            //         console.log(events);
+            //         console.log(">>>>>>22>>>>>>>");
             if (events["connection.update"]) {
                 const update = events["connection.update"];
                 const { connection, lastDisconnect } = update;
@@ -171,6 +221,14 @@ setInterval(() => {
                     ) {
                         startSock();
                     } else {
+                        // await fsProm.unlink(join("BotsApp.sqlite"));
+                        await fsProm.unlink(join("session.data.json"));
+                        await Session.drop();
+                        await Greeting.drop();
+                        await Message.drop();
+                        await Chat.drop();
+                        await GroupMetadata.drop();
+                        await Contact.drop();
                         console.log(
                             chalk.redBright(
                                 "Connection closed. You are logged out. Delete the BotsApp.db and session.data.json files to rescan the code."
@@ -190,124 +248,133 @@ setInterval(() => {
                     );
                 }
             }
-
             if (events["creds.update"]) {
                 await saveCreds();
             }
 
-            if (events["contacts.upsert"]) {
-                const contacts: Contact[] = events["contacts.upsert"];
-                const contactsUpdate = (newContacts: Contact[]) => {
-                    for (const contact of newContacts) {
-                        if (store.contacts[contact.id]) {
-                            Object.assign(store.contacts[contact.id], contact);
-                        } else {
-                            store.contacts[contact.id] = contact;
-                        }
-                    }
-                    return;
-                };
-
-                contactsUpdate(contacts);
-            }
-
-            if (events["contacts.update"]) {
-                const contacts: Partial<Contact>[] = events["contacts.update"];
-                const contactsUpdate = (newContacts: any) => {
-                    for (const contact of newContacts) {
-                        if (store.contacts[contact.id]) {
-                            Object.assign(store.contacts[contact.id], contact);
-                        } else {
-                            store.contacts[contact.id] = contact;
-                        }
-                    }
-                    return;
-                };
-                contactsUpdate(contacts);
-            }
-
-            if (events["messages.upsert"]) {
-                const upsert = events["messages.upsert"];
-                // console.log(JSON.stringify(upsert, undefined, 2))
-                if (upsert.type !== "notify") {
-                    return;
-                }
-                for (const msg of upsert.messages) {
-                    let chat: proto.IWebMessageInfo = msg;
-                    let BotsApp: BotsApp = await resolve(chat, sock);
-                    console.log(BotsApp);
-                    if (BotsApp.isCmd) {
-                        let isBlacklist: boolean =
-                            await Blacklist.getBlacklistUser(
-                                BotsApp.sender!,
-                                BotsApp.chatId!
-                            );
-                        const cleared: boolean | void = await clearance(
-                            BotsApp,
-                            client,
-                            isBlacklist
-                        );
-                        if (!cleared) {
-                            return;
-                        }
-                        const reactionMessage = {
-                            react: {
-                                text: "🪄",
-                                key: chat.key,
-                            },
-                        };
-                        await sock.sendMessage(
-                            chat!.key!.remoteJid!,
-                            reactionMessage
-                        );
-                        console.log(
-                            chalk.redBright.bold(
-                                `[INFO] ${BotsApp.commandName} command executed.`
-                            )
-                        );
-                        const command = commandHandler.get(
-                            BotsApp.commandName!
-                        );
-                        let args = BotsApp.body?.trim().split(/\s+/).slice(1);
-                        console.log(args);
-                        if (!command) {
-                            client.sendMessage(
-                                BotsApp.chatId!,
-                                "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
-                                MessageType.text
-                            );
-                            return;
-                        } else if (command && BotsApp.commandName == "help") {
-                            try {
-                                command.handle(
-                                    client,
-                                    chat,
-                                    BotsApp,
-                                    args,
-                                    commandHandler
-                                );
-                                return;
-                            } catch (err) {
-                                console.log(chalk.red("[ERROR] ", err));
-                                return;
-                            }
-                        }
-                        try {
-                            await command
-                                .handle(client, chat, BotsApp, args)
-                                .catch((err: any) =>
-                                    console.log("[ERROR] " + err)
-                                );
-                        } catch (err) {
-                            console.log(chalk.red("[ERROR] ", err));
-                        }
-                    }
-                }
-            }
+            //         if (events["contacts.upsert"]) {
+            //             const contacts: Contact[] = events["contacts.upsert"];
+            //             const contactsUpdate = (newContacts: Contact[]) => {
+            //                 for (const contact of newContacts) {
+            //                     if (store.contacts[contact.id]) {
+            //                         Object.assign(store.contacts[contact.id], contact);
+            //                     } else {
+            //                         store.contacts[contact.id] = contact;
+            //                     }
+            //                 }
+            //                 return;
+            //             };
+            //             contactsUpdate(contacts);
+            //         }
+            //         if (events["contacts.update"]) {
+            //             const contacts: Partial<Contact>[] = events["contacts.update"];
+            //             const contactsUpdate = (newContacts: any) => {
+            //                 for (const contact of newContacts) {
+            //                     if (store.contacts[contact.id]) {
+            //                         Object.assign(store.contacts[contact.id], contact);
+            //                     } else {
+            //                         store.contacts[contact.id] = contact;
+            //                     }
+            //                 }
+            //                 return;
+            //             };
+            //             contactsUpdate(contacts);
+            //         }
+            //         if (events["messages.upsert"]) {
+            //             const upsert = events["messages.upsert"];
+            //             // console.log(JSON.stringify(upsert, undefined, 2));
+            //             if (upsert.type !== "notify") {
+            //                 return;
+            //             }
+            //             for (const msg of upsert.messages) {
+            //                 let chat: proto.IWebMessageInfo = msg;
+            //                 console.log(msg);
+            //                 let BotsApp: BotsApp = await resolve(chat, sock);
+            //                 console.log(BotsApp);
+            //                 if (BotsApp.isCmd) {
+            //                     let isBlacklist: boolean =
+            //                         await Blacklist.getBlacklistUser(
+            //                             BotsApp.sender!,
+            //                             BotsApp.chatId!
+            //                         );
+            //                     const cleared: boolean | void = await clearance(
+            //                         BotsApp,
+            //                         client,
+            //                         isBlacklist
+            //                     );
+            //                     if (!cleared) {
+            //                         return;
+            //                     }
+            //                     const reactionMessage = {
+            //                         react: {
+            //                             text: "🪄",
+            //                             key: chat.key,
+            //                         },
+            //                     };
+            //                     await sock.sendMessage(
+            //                         chat!.key!.remoteJid!,
+            //                         reactionMessage
+            //                     );
+            //                     console.log(
+            //                         chalk.redBright.bold(
+            //                             `[INFO] ${BotsApp.commandName} command executed.`
+            //                         )
+            //                     );
+            //                     const command = commandHandler.get(
+            //                         BotsApp.commandName!
+            //                     );
+            //                     let args = BotsApp.body?.trim().split(/\s+/).slice(1);
+            //                     console.log(args);
+            //                     if (!command) {
+            //                         client.sendMessage(
+            //                             BotsApp.chatId!,
+            //                             "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
+            //                             MessageType.text
+            //                         );
+            //                         return;
+            //                     } else if (command && BotsApp.commandName == "help") {
+            //                         try {
+            //                             command.handle(
+            //                                 client,
+            //                                 chat,
+            //                                 BotsApp,
+            //                                 args,
+            //                                 commandHandler
+            //                             );
+            //                             return;
+            //                         } catch (err) {
+            //                             console.log(chalk.red("[ERROR] ", err));
+            //                             return;
+            //                         }
+            //                     }
+            //                     try {
+            //                         await command
+            //                             .handle(client, chat, BotsApp, args)
+            //                             .catch((err: any) =>
+            //                                 console.log("[ERROR] " + err)
+            //                             );
+            //                     } catch (err) {
+            //                         console.log(chalk.red("[ERROR] ", err));
+            //                     }
+            //                 }
+            //             }
+            //         }
         });
 
         return sock;
     };
 
     startSock();
+    process.on("SIGINT", async function () {
+        console.log("Caught interrupt signal");
+        // await fsProm.unlink("BotsApp.sqlite");
+        await fsProm.unlink("session.data.json");
+        await Session.drop();
+        await Greeting.drop();
+        await Message.drop();
+        await Chat.drop();
+        await GroupMetadata.drop();
+        await Contact.drop();
+        process.exit();
+    });
 })().catch((err) => console.log("[MAINERROR] : %s", chalk.redBright.bold(err)));

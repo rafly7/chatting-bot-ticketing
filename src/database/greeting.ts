@@ -144,12 +144,12 @@ async function deleteMessage(
     }
 }
 
-export = {
-    Greeting: Greeting,
-    getMessage: getMessage,
-    changeSettings: changeSettings,
-    checkSettings: checkSettings,
-    setWelcome: setWelcome,
-    setGoodbye: setGoodbye,
-    deleteMessage: deleteMessage,
+export {
+    Greeting,
+    getMessage,
+    changeSettings,
+    checkSettings,
+    setWelcome,
+    setGoodbye,
+    deleteMessage,
 };

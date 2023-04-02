@@ -63,6 +63,19 @@ class Message extends Model {
     public static options: InitOptions = {
         sequelize,
         timestamps: false,
+        indexes: [
+            {
+                unique: true,
+                name: "unique_message_key_per_session_id",
+                fields: ["sessionId", "remoteJid", "id"],
+                using: "BTREE",
+            },
+            {
+                name: "message_sessionId_idx",
+                fields: ["sessionId"],
+                using: "BTREE",
+            },
+        ],
     };
 
     public static attributes: ModelAttributes = {
@@ -74,17 +87,14 @@ class Message extends Model {
         sessionId: {
             type: DataTypes.STRING(128),
             allowNull: false,
-            unique: true,
         },
         remoteJid: {
             type: DataTypes.STRING(128),
             allowNull: false,
-            unique: true,
         },
         id: {
             type: DataTypes.STRING(128),
             allowNull: false,
-            unique: true,
         },
         agentId: {
             type: DataTypes.STRING(128),
@@ -114,7 +124,7 @@ class Message extends Model {
             type: DataTypes.BIGINT,
         },
         finalLiveLocation: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         futureproofData: {
             type: DataTypes.BLOB,
@@ -123,22 +133,22 @@ class Message extends Model {
             type: DataTypes.BOOLEAN,
         },
         keepInChat: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         key: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         labels: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         mediaCiphertextSha256: {
             type: DataTypes.BLOB,
         },
         mediaData: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         message: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         messageC2STimestamp: {
             type: DataTypes.BIGINT,
@@ -147,7 +157,7 @@ class Message extends Model {
             type: DataTypes.BLOB,
         },
         messageStubParameters: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         messageStubType: {
             type: DataTypes.INTEGER,
@@ -165,28 +175,28 @@ class Message extends Model {
             type: DataTypes.STRING(128),
         },
         paymentInfo: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         photoChange: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         pollAdditionalMetadata: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         pollUpdates: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         pushName: {
             type: DataTypes.STRING(128),
         },
         quotedPaymentInfo: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         quotedStickerData: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         reactions: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         revokeMessageTimestamp: {
             type: DataTypes.BIGINT,
@@ -201,7 +211,7 @@ class Message extends Model {
             type: DataTypes.BOOLEAN,
         },
         statusPsa: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         urlNumber: {
             type: DataTypes.BOOLEAN,
@@ -210,7 +220,7 @@ class Message extends Model {
             type: DataTypes.BOOLEAN,
         },
         userReceipt: {
-            type: DataTypes.JSON,
+            type: DataTypes.JSONB,
         },
         verifiedBizName: {
             type: DataTypes.STRING(128),
@@ -220,6 +230,19 @@ class Message extends Model {
     public static $options: ModelOptions = {
         tableName: "message",
         timestamps: false,
+        indexes: [
+            {
+                unique: true,
+                name: "message_unique_remoteJid_per_session_id_per_id",
+                fields: ["sessionId", "remoteJid", "id"],
+                using: "BTREE",
+            },
+            {
+                name: "message_sessionId_idx",
+                fields: ["sessionId"],
+                using: "BTREE",
+            },
+        ],
     };
 
     public static init(): any {

@@ -21,7 +21,7 @@ const convertToLogLevel = (value: string) => {
 // Declare these environment variables first
 process.env.DATABASE_URL =
     process.env.DATABASE_URL === undefined
-        ? "./BotsApp.db"
+        ? "./BotsApp.sqlite"
         : process.env.DATABASE_URL;
 process.env.DEBUG =
     process.env.DEBUG === undefined ? "false" : process.env.DEBUG;
@@ -51,24 +51,30 @@ const config = {
             : process.env.CURRENT_WEATHER_API_KEY,
     DATABASE_URL:
         process.env.DATABASE_URL === undefined
-            ? "./BotsApp.db"
+            ? "./BotsApp.sqlite"
             : process.env.DATABASE_URL,
     DEBUG: process.env.DEBUG === undefined ? false : process.env.DEBUG,
     DATABASE:
-        process.env.DATABASE_URL === "./BotsApp.db"
+        process.env.DATABASE_URL === "./BotsApp.sqlite"
             ? new Sequelize({
                   dialect: "sqlite",
                   storage: process.env.DATABASE_URL,
                   logging: convertToLogLevel(process.env.DEBUG),
               })
-            : new Sequelize(process.env.DATABASE_URL, {
-                  dialect: "postgres",
-                  protocol: "postgres",
-                  logging: convertToLogLevel(process.env.DEBUG),
-                  dialectOptions: {
-                      ssl: { require: true, rejectUnauthorized: false },
-                  },
-              }),
+            : new Sequelize(
+                  process.env.DB_NAME ?? "",
+                  process.env.DB_USER ?? "",
+                  process.env.DB_PASS ?? "",
+                  {
+                      dialect: "postgres",
+                      host: process.env.DB_HOST,
+                      port: parseInt(process.env.DB_PORT ?? "5432"),
+                      logging: convertToLogLevel(process.env.DEBUG),
+                      //   dialectOptions: {
+                      //       ssl: { require: true, rejectUnauthorized: false },
+                      //   },
+                  }
+              ),
     WORK_TYPE:
         process.env.WORK_TYPE === undefined ? "private" : process.env.WORK_TYPE,
     SUDO: process.env.SUDO === undefined ? "6289611322917" : process.env.SUDO,
