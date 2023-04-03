@@ -14,6 +14,7 @@ const sequelize: Sequelize = config.DATABASE;
 class Chat extends Model {
     declare pkId: number;
     declare sessionId: string;
+    declare archive: boolean | any;
     declare archived: boolean | null;
     declare contactPrimaryIdentityKey: any | null;
     declare conversationTimestamp: bigint | null;
@@ -86,9 +87,11 @@ class Chat extends Model {
             type: DataTypes.STRING(128),
             allowNull: false,
         },
+        archive: {
+            type: DataTypes.BOOLEAN,
+        },
         archived: {
             type: DataTypes.BOOLEAN,
-            allowNull: false,
         },
         contactPrimaryIdentityKey: {
             type: DataTypes.BLOB,

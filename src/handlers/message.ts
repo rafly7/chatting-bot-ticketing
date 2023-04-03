@@ -4,15 +4,18 @@ import {
     WAMessageUpdate,
     jidNormalizedUser,
     toNumber,
+    MessageUserReceiptUpdate,
+    MessageUserReceipt,
+    WAMessageKey,
 } from "@adiwajshing/baileys";
 
 import { proto } from "@adiwajshing/baileys";
-import type { BaileysEventHandler } from "./types";
+import type { BaileysEventHandler, MessageSet } from "./types";
 
 import Message from "../models/message";
 import chalk from "chalk";
 import Chat from "../models/chat";
-import { Sequelize } from "sequelize";
+import { Sequelize, Op } from "sequelize";
 import config from "../configs/conf";
 
 type MessageUpsert = {
@@ -20,10 +23,10 @@ type MessageUpsert = {
     type: MessageUpsertType;
 };
 
-type MessageSet = {
-    messages: proto.IWebMessageInfo[];
-    isLatest: boolean;
-};
+// type MessageSet = {
+//     messages: proto.IWebMessageInfo[];
+//     isLatest: boolean;
+// };
 
 const sequelize: Sequelize = config.DATABASE;
 
@@ -41,7 +44,13 @@ class MessageHandler {
         this.event.on("messages.upsert", this.upsert);
         this.event.on("messages.set", this.set);
         this.event.on("messages.update", this.update);
+        this.event.on("messages.delete", this.del);
+        this.event.on("message-receipt.update", this.updateReceipt);
+        this.event.on("messages.reaction", this.updateReaction);
     }
+
+    private getKeyAuthor = (key: WAMessageKey | undefined | null) =>
+        (key?.fromMe ? "me" : key?.participant || key?.remoteJid) || "";
 
     private set: BaileysEventHandler<"messages.set"> = async (
         ms: MessageSet
@@ -124,10 +133,6 @@ class MessageHandler {
                 for (const message of mu.messages) {
                     try {
                         const jid = jidNormalizedUser(message.key.remoteJid!);
-                        console.log(chalk.yellow.bold(">>>>>>>>>>> 1"));
-                        console.log(chalk.greenBright.bold(message));
-                        console.log(chalk.yellow.bold(">>>>>>>>>>> 2"));
-                        // const data = transformPrisma(message);
                         await Message.upsert({
                             sessionId: this.sessionId,
                             remoteJid: jid,
@@ -305,26 +310,154 @@ class MessageHandler {
         }
     };
 
-    // upsert(): BaileysEventHandler<"messages.upsert"> {
-    //     if (event["messages.upsert"]) {
-    //         const upsert = event["messages.upsert"];
-    //         switch (upsert.type) {
-    //             case "append":
-    //             case "notify":
-    //                 MessageHandler.upsert();
-    //                 for (const message of upsert.messages) {
-    //                     try {
-    //                         // const jid = jidNormalizedUser(
-    //                         //     message.key.remoteJid!
-    //                         // );
-    //                         // await Message.upsert({
-    //                         // })
-    //                     } catch (e) {}
-    //                 }
-    //                 break;
-    //         }
-    //     }
-    // }
+    private del: BaileysEventHandler<"messages.delete"> = async (
+        md:
+            | {
+                  keys: proto.IMessageKey[];
+              }
+            | {
+                  jid: string;
+                  all: true;
+              }
+    ): Promise<void> => {
+        try {
+            if ("all" in md) {
+                await Message.destroy({
+                    where: {
+                        sessionId: this.sessionId,
+                        remoteJid: md.jid,
+                    },
+                });
+                return;
+            }
+            const jid = md.keys[0].remoteJid;
+            await Message.destroy({
+                where: {
+                    id: {
+                        [Op.in]: md.keys.map((k: proto.IMessageKey) => k.id),
+                    },
+                    remoteJid: jid,
+                    sessionId: this.sessionId,
+                },
+            });
+        } catch (e) {
+            console.log(chalk.redBright.bold(e));
+        }
+    };
+
+    private updateReceipt: BaileysEventHandler<"message-receipt.update"> =
+        async (datas: MessageUserReceiptUpdate[]): Promise<void> => {
+            for (const { key, receipt } of datas) {
+                try {
+                    await sequelize.transaction(async (t) => {
+                        const message = await Message.findOne({
+                            where: {
+                                sessionId: this.sessionId,
+                                id: key.id,
+                                remoteJid: key.remoteJid,
+                            },
+                            raw: true,
+                            transaction: t,
+                        });
+                        if (!message) {
+                            return console.log(
+                                chalk.redBright.bold(
+                                    { datas },
+                                    "Got receipt update for non existent message"
+                                )
+                            );
+                        }
+                        let userReceipt = (message.userReceipt ||
+                            []) as unknown as MessageUserReceipt[];
+                        const recepient = userReceipt.find(
+                            (m: proto.IUserReceipt) =>
+                                m.userJid === receipt.userJid
+                        );
+
+                        if (recepient) {
+                            userReceipt = [
+                                ...userReceipt.filter(
+                                    (m: proto.IUserReceipt) =>
+                                        m.userJid !== receipt.userJid
+                                ),
+                                receipt,
+                            ];
+                        } else {
+                            userReceipt.push(receipt);
+                        }
+
+                        await Message.update(
+                            {
+                                userReceipt: userReceipt,
+                            },
+                            {
+                                where: {
+                                    sessionId: this.sessionId,
+                                    remoteJid: key.remoteJid,
+                                    id: key.id,
+                                },
+                            }
+                        );
+                    });
+                } catch (e) {
+                    console.log(chalk.redBright.bold(e));
+                }
+            }
+        };
+
+    private updateReaction: BaileysEventHandler<"messages.reaction"> = async (
+        args: {
+            key: proto.IMessageKey;
+            reaction: proto.IReaction;
+        }[]
+    ): Promise<void> => {
+        for (const { key, reaction } of args) {
+            try {
+                await sequelize.transaction(async (t) => {
+                    const message = await Message.findOne({
+                        where: {
+                            id: key.id,
+                            remoteJid: key.remoteJid!,
+                            sessionId: this.sessionId,
+                        },
+                        transaction: t,
+                        raw: true,
+                    });
+                    if (!message) {
+                        return console.log(
+                            chalk.redBright.bold(
+                                "Got reaction update for non existent message"
+                            )
+                        );
+                    }
+                    const authorID = this.getKeyAuthor(reaction.key);
+                    const reactions = (
+                        (message.reactions || []) as proto.IReaction[]
+                    ).filter(
+                        (r: proto.IReaction) =>
+                            this.getKeyAuthor(r.key) !== authorID
+                    );
+                    if (reaction.text) reactions.push(reaction);
+                    await Message.update(
+                        {
+                            reaction: reaction,
+                        },
+                        {
+                            where: {
+                                sessionId: this.sessionId,
+                                id: key.id,
+                                remoteJid: key.remoteJid,
+                            },
+                            transaction: t,
+                        }
+                    );
+                });
+            } catch (e) {
+                console.log(chalk.redBright.bold(e));
+            }
+        }
+    };
+
     static listen(sessionId: string, event: BaileysEventEmitter) {}
     static unlisten(sessionId: string, event: BaileysEventEmitter) {}
 }

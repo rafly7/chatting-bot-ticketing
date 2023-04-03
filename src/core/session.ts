@@ -5,10 +5,8 @@ import type {
 } from "@adiwajshing/baileys";
 import { proto } from "@adiwajshing/baileys";
 import { BufferJSON, initAuthCreds } from "@adiwajshing/baileys";
-// import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import Session from "../models/session";
 import chalk from "chalk";
-// import { useLogger, usePrisma } from "./shared";
 
 const fixId = (file: string) => {
     var _a;
@@ -20,17 +18,21 @@ const fixId = (file: string) => {
         : _a.replace(/:/g, "-");
 };
 export async function useSession(sessionId: string) {
-    // const model = usePrisma()!.session;
-    // const model = new Session();
-    // const logger = useLogger();
-
     const write = async (data: any, id: string) => {
         try {
-            await Session.upsert({
-                data: JSON.stringify(data, BufferJSON.replacer),
-                id: fixId(id),
-                sessionId: sessionId,
-            });
+            await Session.upsert(
+                {
+                    data: JSON.stringify(data, BufferJSON.replacer),
+                    id: fixId(id),
+                    sessionId: sessionId,
+                },
+                {
+                    conflictWhere: {
+                        sessionId: sessionId,
+                        id: id,
+                    },
+                }
+            );
         } catch (e) {
             console.log(chalk.greenBright.bold(e));
             //   logger!.error(e, 'An error occured during session write');

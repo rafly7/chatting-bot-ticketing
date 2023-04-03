@@ -54,12 +54,12 @@ logger.level = "error";
 
 // the store maintains the data of the WA connection in memory
 // can be written out to a file & read from it
-const store = makeInMemoryStore({ logger });
-store?.readFromFile("./session.data.json");
+// const store = makeInMemoryStore({ logger });
+// store?.readFromFile("./session.data.json");
 // save every 10s
-setInterval(() => {
-    store?.writeToFile("./session.data.json");
-}, 10_000);
+// setInterval(() => {
+//     store?.writeToFile("./session.data.json");
+// }, 10_000);
 
 (async (): Promise<void> => {
     // console.log(banner);
@@ -185,27 +185,38 @@ setInterval(() => {
             browser: ["Samantha-Ticketing", "Chrome", "4.0.0"],
             msgRetryCounterMap,
             // implement to handle retries
-            getMessage: async (key: any) => {
+            getMessage: async (key: proto.IMessageKey) => {
                 console.log(">>>>>KEY>>>>>");
                 console.log(key);
                 console.log(">>>>>KEY>>>>>");
-                if (store) {
-                    const msg = await store.loadMessage(
-                        key.remoteJid!,
-                        key.id!,
-                        undefined
-                    );
-                    return msg?.message || undefined;
-                }
+                const data = await Message.findOne({
+                    where: {
+                        id: key.id,
+                        remoteJid: key.remoteJid,
+                        sessionId: "rafly",
+                    },
+                });
+
+                return (data?.message || undefined) as
+                    | proto.IMessage
+                    | undefined;
+                // if (store) {
+                //     const msg = await store.loadMessage(
+                //         key.remoteJid!,
+                //         key.id!,
+                //         undefined
+                //     );
+                //     return msg?.message || undefined;
+                // }
 
                 // only if store is present
                 return proto.Message.fromObject({});
             },
         });
 
-        store?.bind(sock.ev);
+        // store?.bind(sock.ev);
 
-        let client: Client = new Client(sock, store);
+        let client: Client = new Client(sock, null);
         new HandlersSock("rafly", sock.ev);
         sock.ev.process(async (events) => {
             //         console.log(">>>>>>11>>>>>>>");
@@ -280,85 +291,85 @@ setInterval(() => {
             //             };
             //             contactsUpdate(contacts);
             //         }
-            //         if (events["messages.upsert"]) {
-            //             const upsert = events["messages.upsert"];
-            //             // console.log(JSON.stringify(upsert, undefined, 2));
-            //             if (upsert.type !== "notify") {
-            //                 return;
-            //             }
-            //             for (const msg of upsert.messages) {
-            //                 let chat: proto.IWebMessageInfo = msg;
-            //                 console.log(msg);
-            //                 let BotsApp: BotsApp = await resolve(chat, sock);
-            //                 console.log(BotsApp);
-            //                 if (BotsApp.isCmd) {
-            //                     let isBlacklist: boolean =
-            //                         await Blacklist.getBlacklistUser(
-            //                             BotsApp.sender!,
-            //                             BotsApp.chatId!
-            //                         );
-            //                     const cleared: boolean | void = await clearance(
-            //                         BotsApp,
-            //                         client,
-            //                         isBlacklist
-            //                     );
-            //                     if (!cleared) {
-            //                         return;
-            //                     }
-            //                     const reactionMessage = {
-            //                         react: {
-            //                             text: "🪄",
-            //                             key: chat.key,
-            //                         },
-            //                     };
-            //                     await sock.sendMessage(
-            //                         chat!.key!.remoteJid!,
-            //                         reactionMessage
-            //                     );
-            //                     console.log(
-            //                         chalk.redBright.bold(
-            //                             `[INFO] ${BotsApp.commandName} command executed.`
-            //                         )
-            //                     );
-            //                     const command = commandHandler.get(
-            //                         BotsApp.commandName!
-            //                     );
-            //                     let args = BotsApp.body?.trim().split(/\s+/).slice(1);
-            //                     console.log(args);
-            //                     if (!command) {
-            //                         client.sendMessage(
-            //                             BotsApp.chatId!,
-            //                             "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
-            //                             MessageType.text
-            //                         );
-            //                         return;
-            //                     } else if (command && BotsApp.commandName == "help") {
-            //                         try {
-            //                             command.handle(
-            //                                 client,
-            //                                 chat,
-            //                                 BotsApp,
-            //                                 args,
-            //                                 commandHandler
-            //                             );
-            //                             return;
-            //                         } catch (err) {
-            //                             console.log(chalk.red("[ERROR] ", err));
-            //                             return;
-            //                         }
-            //                     }
-            //                     try {
-            //                         await command
-            //                             .handle(client, chat, BotsApp, args)
-            //                             .catch((err: any) =>
-            //                                 console.log("[ERROR] " + err)
-            //                             );
-            //                     } catch (err) {
-            //                         console.log(chalk.red("[ERROR] ", err));
-            //                     }
-            //                 }
-            //             }
-            //         }
+            if (events["messages.upsert"]) {
+                const upsert = events["messages.upsert"];
+                // console.log(JSON.stringify(upsert, undefined, 2));
+                if (upsert.type !== "notify") {
+                    return;
+                }
+                for (const msg of upsert.messages) {
+                    let chat: proto.IWebMessageInfo = msg;
+                    console.log(msg);
+                    let BotsApp: BotsApp = await resolve(chat, sock);
+                    console.log(BotsApp);
+                    if (BotsApp.isCmd) {
+                        let isBlacklist: boolean =
+                            await Blacklist.getBlacklistUser(
+                                BotsApp.sender!,
+                                BotsApp.chatId!
+                            );
+                        const cleared: boolean | void = await clearance(
+                            BotsApp,
+                            client,
+                            isBlacklist
+                        );
+                        if (!cleared) {
+                            return;
+                        }
+                        const reactionMessage = {
+                            react: {
+                                text: "🪄",
+                                key: chat.key,
+                            },
+                        };
+                        await sock.sendMessage(
+                            chat!.key!.remoteJid!,
+                            reactionMessage
+                        );
+                        console.log(
+                            chalk.redBright.bold(
+                                `[INFO] ${BotsApp.commandName} command executed.`
+                            )
+                        );
+                        const command = commandHandler.get(
+                            BotsApp.commandName!
+                        );
+                        let args = BotsApp.body?.trim().split(/\s+/).slice(1);
+                        console.log(args);
+                        if (!command) {
+                            client.sendMessage(
+                                BotsApp.chatId!,
+                                "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
+                                MessageType.text
+                            );
+                            return;
+                        } else if (command && BotsApp.commandName == "help") {
+                            try {
+                                command.handle(
+                                    client,
+                                    chat,
+                                    BotsApp,
+                                    args,
+                                    commandHandler
+                                );
+                                return;
+                            } catch (err) {
+                                console.log(chalk.red("[ERROR] ", err));
+                                return;
+                            }
+                        }
+                        try {
+                            await command
+                                .handle(client, chat, BotsApp, args)
+                                .catch((err: any) =>
+                                    console.log("[ERROR] " + err)
+                                );
+                        } catch (err) {
+                            console.log(chalk.red("[ERROR] ", err));
+                        }
+                    }
+                }
+            }
         });
 
         return sock;
@@ -368,13 +379,13 @@ setInterval(() => {
     process.on("SIGINT", async function () {
         console.log("Caught interrupt signal");
         // await fsProm.unlink("BotsApp.sqlite");
-        await fsProm.unlink("session.data.json");
-        await Session.drop();
-        await Greeting.drop();
-        await Message.drop();
-        await Chat.drop();
-        await GroupMetadata.drop();
-        await Contact.drop();
+        // await fsProm.unlink("session.data.json");
+        // await Session.drop();
+        // await Greeting.drop();
+        // await Message.drop();
+        // await Chat.drop();
+        // await GroupMetadata.drop();
+        // await Contact.drop();
         process.exit();
     });
 })().catch((err) => console.log("[MAINERROR] : %s", chalk.redBright.bold(err)));
