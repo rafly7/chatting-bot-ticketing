@@ -17,19 +17,19 @@ class Blacklist extends Model<
     declare GRPID: string;
 }
 
-Blacklist.init(
-    {
-        JID: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        GRPID: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-    },
-    { sequelize, tableName: "Blacklist" }
-);
+// Blacklist.init(
+//     {
+//         JID: {
+//             type: DataTypes.STRING,
+//             allowNull: false,
+//         },
+//         GRPID: {
+//             type: DataTypes.STRING,
+//             allowNull: false,
+//         },
+//     },
+//     { sequelize, tableName: "Blacklist" }
+// );
 
 async function addBlacklistUser(
     jid: string = "",

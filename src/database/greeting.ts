@@ -16,26 +16,26 @@ class Greeting extends Model {
     declare message: string | null;
 }
 
-Greeting.init(
-    {
-        chat: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        switched: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: "ON",
-        },
-        greetingType: {
-            type: DataTypes.TEXT,
-        },
-        message: {
-            type: DataTypes.TEXT,
-        },
-    },
-    { sequelize, tableName: "Greetings" }
-);
+// Greeting.init(
+//     {
+//         chat: {
+//             type: DataTypes.STRING,
+//             allowNull: false,
+//         },
+//         switched: {
+//             type: DataTypes.STRING,
+//             allowNull: false,
+//             defaultValue: "ON",
+//         },
+//         greetingType: {
+//             type: DataTypes.TEXT,
+//         },
+//         message: {
+//             type: DataTypes.TEXT,
+//         },
+//     },
+//     { sequelize, tableName: "Greetings" }
+// );
 
 async function getMessage(
     jid: string | null = null,

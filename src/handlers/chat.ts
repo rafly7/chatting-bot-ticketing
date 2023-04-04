@@ -1,4 +1,4 @@
-import { BaileysEventEmitter, proto, Chat } from "@adiwajshing/baileys";
+import { BaileysEventEmitter, Chat } from "@adiwajshing/baileys";
 import chalk from "chalk";
 import { Sequelize, Op } from "sequelize";
 import config from "../configs/conf";
@@ -15,14 +15,20 @@ class ChatHandler {
     constructor(sessionId: string, event: BaileysEventEmitter) {
         this.sessionId = sessionId;
         this.event = event;
-        this.init();
     }
 
-    private init() {
+    public listen() {
         this.event.on("chats.set", this.set);
         this.event.on("chats.upsert", this.upsert);
         this.event.on("chats.update", this.update);
         this.event.on("chats.delete", this.delete);
+    }
+
+    public unlisten() {
+        this.event.off("chats.set", this.set);
+        this.event.off("chats.upsert", this.upsert);
+        this.event.off("chats.update", this.update);
+        this.event.off("chats.delete", this.delete);
     }
 
     private set: BaileysEventHandler<"chats.set"> = async (ms: {
@@ -59,7 +65,6 @@ class ChatHandler {
                         sessionId: this.sessionId,
                         archive: dt.archive,
                         archived: dt.archived,
-                        // archived: dt.archived,
                         contactPrimaryIdentityKey: dt.contactPrimaryIdentityKey,
                         conversationTimestamp: dt.conversationTimestamp,
                         createdAt: dt.createdAt,
@@ -75,10 +80,10 @@ class ChatHandler {
                         isDefaultSubgroup: dt.isDefaultSubgroup,
                         isParentGroup: dt.isParentGroup,
                         lastMsgTimestamp: dt.lastMsgTimestamp,
-                        // lidJid: dt.lidJid,
                         markedAsUnread: dt.markedAsUnread,
                         mediaVisibility: dt.mediaVisibility,
                         messages: dt.messages,
+                        mute: dt.mute,
                         muteEndTime: dt.muteEndTime,
                         name: dt.name,
                         newJid: dt.newJid,
@@ -87,11 +92,11 @@ class ChatHandler {
                         pHash: dt.pHash,
                         parentGroupId: dt.parentGroupId,
                         participant: dt.participant,
+                        pin: dt.pin,
                         pinned: dt.pinned,
                         pnJid: dt.pnJid,
-                        // pnhDuplicateLidThread: dt.pnhDuplicateLidThread,
                         readOnly: dt.readOnly,
-                        // shareOwnPn: dt.shareOwnPn,
+                        selfPnExposed: dt.selfPnExposed,
                         support: dt.support,
                         suspended: dt.suspended,
                         tcToken: dt.tcToken,
@@ -101,19 +106,21 @@ class ChatHandler {
                         unreadCount: dt.unreadCount,
                         unreadMentionCount: dt.unreadMentionCount,
                         wallpaper: dt.wallpaper,
-                        // lastMessageRecvTimestamp: dt.lastMessageRecvTimestamp,
                     });
                 }
                 const dataChats = await ChatM.bulkCreate(pushData, {
                     transaction: t,
                 });
                 console.log(
-                    chalk.greenBright.bold(dataChats.length),
-                    "Synced chats"
+                    chalk.greenBright.bold(
+                        "[chats.set] ",
+                        dataChats.length,
+                        " Synced chats"
+                    )
                 );
             });
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[chats.set] ", e));
         }
     };
 
@@ -125,6 +132,7 @@ class ChatHandler {
                 await ChatM.upsert(
                     {
                         sessionId: this.sessionId,
+                        archive: val.archive,
                         archived: val.archived,
                         contactPrimaryIdentityKey:
                             val.contactPrimaryIdentityKey,
@@ -143,10 +151,10 @@ class ChatHandler {
                         isDefaultSubgroup: val.isDefaultSubgroup,
                         isParentGroup: val.isParentGroup,
                         lastMsgTimestamp: val.lastMsgTimestamp,
-                        // lidJid: val.lidJid,
                         markedAsUnread: val.markedAsUnread,
                         mediaVisibility: val.mediaVisibility,
                         messages: val.messages,
+                        mute: val.mute,
                         muteEndTime: val.muteEndTime,
                         name: val.name,
                         newJid: val.newJid,
@@ -155,11 +163,11 @@ class ChatHandler {
                         pHash: val.pHash,
                         parentGroupId: val.parentGroupId,
                         participant: val.participant,
+                        pin: val.pin,
                         pinned: val.pinned,
                         pnJid: val.pnJid,
-                        // pnhDuplicateLidThread: val.pnhDuplicateLidThread,
                         readOnly: val.readOnly,
-                        // shareOwnPn: val.shareOwnPn,
+                        selfPnExposed: val.selfPnExposed,
                         support: val.support,
                         suspended: val.suspended,
                         tcToken: val.tcToken,
@@ -169,7 +177,6 @@ class ChatHandler {
                         unreadCount: val.unreadCount,
                         unreadMentionCount: val.unreadMentionCount,
                         wallpaper: val.wallpaper,
-                        // lastMessageRecvTimestamp: val.lastMessageRecvTimestamp,
                     },
                     {
                         conflictWhere: {
@@ -180,7 +187,7 @@ class ChatHandler {
                 );
             });
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[chats.upsert] ", e));
         }
     };
 
@@ -192,6 +199,7 @@ class ChatHandler {
                 await ChatM.update(
                     {
                         sessionId: this.sessionId,
+                        archive: update.archive,
                         archived: update.archived,
                         contactPrimaryIdentityKey:
                             update.contactPrimaryIdentityKey,
@@ -211,10 +219,10 @@ class ChatHandler {
                         isDefaultSubgroup: update.isDefaultSubgroup,
                         isParentGroup: update.isParentGroup,
                         lastMsgTimestamp: update.lastMsgTimestamp,
-                        // lidJid: update.lidJid,
                         markedAsUnread: update.markedAsUnread,
                         mediaVisibility: update.mediaVisibility,
                         messages: update.messages,
+                        mute: update.mute,
                         muteEndTime: update.muteEndTime,
                         name: update.name,
                         newJid: update.newJid,
@@ -223,27 +231,20 @@ class ChatHandler {
                         pHash: update.pHash,
                         parentGroupId: update.parentGroupId,
                         participant: update.participant,
+                        pin: update.pin,
                         pinned: update.pinned,
                         pnJid: update.pnJid,
-                        // pnhDuplicateLidThread: update.pnhDuplicateLidThread,
                         readOnly: update.readOnly,
-                        // shareOwnPn: update.shareOwnPn,
+                        selfPnExposed: update.selfPnExposed,
                         support: update.support,
                         suspended: update.suspended,
                         tcToken: update.tcToken,
                         tcTokenSenderTimestamp: update.tcTokenSenderTimestamp,
                         tcTokenTimestamp: update.tcTokenTimestamp,
                         terminated: update.terminated,
-                        unreadCount:
-                            typeof update.unreadCount === "number"
-                                ? update.unreadCount > 0
-                                    ? { increment: update.unreadCount }
-                                    : { set: update.unreadCount }
-                                : undefined, //update.unreadCount,
+                        unreadCount: update.unreadCount,
                         unreadMentionCount: update.unreadMentionCount,
                         wallpaper: update.wallpaper,
-                        // lastMessageRecvTimestamp:
-                        //     update.lastMessageRecvTimestamp,
                     },
                     {
                         where: {
@@ -253,7 +254,8 @@ class ChatHandler {
                     }
                 );
             } catch (e) {
-                console.log(chalk.redBright.bold(e));
+                // if (e instanceof )
+                console.log(chalk.redBright.bold("[chats.update] ", e));
             }
         }
     };
@@ -270,7 +272,7 @@ class ChatHandler {
                 },
             });
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[chats.delete] ", e));
         }
     };
 }

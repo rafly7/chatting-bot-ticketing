@@ -31,10 +31,10 @@ class Chat extends Model {
     declare isDefaultSubgroup: boolean | null;
     declare isParentGroup: boolean | null;
     declare lastMsgTimestamp: bigint | null;
-    declare lidJid: string | null;
     declare markedAsUnread: boolean | null;
     declare mediaVisibility: number | null;
     declare messages: any | null;
+    declare mute: number | null;
     declare muteEndTime: bigint | null;
     declare name: string | null;
     declare newJid: string | null;
@@ -43,11 +43,11 @@ class Chat extends Model {
     declare pHash: string | null;
     declare parentGroupId: string | null;
     declare participant: any | null;
+    declare pin: number | null;
     declare pinned: number | null;
     declare pnJid: string | null;
-    declare pnhDuplicateLidThread: boolean | null;
     declare readOnly: boolean | null;
-    declare shareOwnPn: boolean | null;
+    declare selfPnExposed: boolean | null;
     declare support: boolean | null;
     declare suspended: boolean | null;
     declare tcToken: any | null;
@@ -57,7 +57,6 @@ class Chat extends Model {
     declare unreadCount: number | null;
     declare unreadMentionCount: number | null;
     declare wallpaper: any | null;
-    declare lastMessageRecvTimestamp: number | null;
 
     public static options: InitOptions = {
         sequelize,
@@ -138,9 +137,6 @@ class Chat extends Model {
         lastMsgTimestamp: {
             type: DataTypes.BIGINT,
         },
-        lidJid: {
-            type: DataTypes.STRING,
-        },
         markedAsUnread: {
             type: DataTypes.BOOLEAN,
         },
@@ -149,6 +145,9 @@ class Chat extends Model {
         },
         messages: {
             type: DataTypes.JSONB,
+        },
+        mute: {
+            type: DataTypes.INTEGER,
         },
         muteEndTime: {
             type: DataTypes.BIGINT,
@@ -174,19 +173,19 @@ class Chat extends Model {
         participant: {
             type: DataTypes.JSONB,
         },
+        pin: {
+            type: DataTypes.INTEGER,
+        },
         pinned: {
             type: DataTypes.INTEGER,
         },
         pnJid: {
             type: DataTypes.STRING,
         },
-        pnhDuplicateLidThread: {
-            type: DataTypes.BOOLEAN,
-        },
         readOnly: {
             type: DataTypes.BOOLEAN,
         },
-        shareOwnPn: {
+        selfPnExposed: {
             type: DataTypes.BOOLEAN,
         },
         support: {
@@ -215,9 +214,6 @@ class Chat extends Model {
         },
         wallpaper: {
             type: DataTypes.JSONB,
-        },
-        lastMessageRecvTimestamp: {
-            type: DataTypes.INTEGER,
         },
     };
 

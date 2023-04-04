@@ -12,13 +12,18 @@ class ContactHandler {
     constructor(sessionId: string, event: BaileysEventEmitter) {
         this.sessionId = sessionId;
         this.event = event;
-        this.init();
     }
 
-    private init() {
+    public listen() {
         this.event.on("contacts.set", this.set);
         this.event.on("contacts.update", this.update);
         this.event.on("contacts.upsert", this.upsert);
+    }
+
+    public unlisten() {
+        this.event.off("contacts.set", this.set);
+        this.event.off("contacts.update", this.update);
+        this.event.off("contacts.upsert", this.upsert);
     }
 
     private update: BaileysEventHandler<"contacts.update"> = async (
@@ -44,7 +49,7 @@ class ContactHandler {
                     }
                 );
             } catch (e) {
-                console.log(chalk.redBright.bold(e));
+                console.log(chalk.redBright.bold("[contacts.update] ", e));
             }
         }
     };
@@ -73,7 +78,7 @@ class ContactHandler {
                 );
             });
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[contacts.upsert] ", e));
         }
     };
 
@@ -89,6 +94,7 @@ class ContactHandler {
                         id: {
                             [Op.notIn]: contactIds,
                         },
+                        sessionId: this.sessionId,
                     },
                 })
             ).map((val: ContactModel) => val.id);
@@ -96,38 +102,48 @@ class ContactHandler {
             const upsertPromises = await PromiseM.map(
                 arg.contacts,
                 async (val) => {
-                    await ContactModel.upsert({
-                        sessionId: this.sessionId,
-                        id: val.id,
-                        name: val.name,
-                        notify: val.notify,
-                        verifiedName: val.verifiedName,
-                        imgUrl: val.imgUrl,
-                        status: val.status,
-                    });
+                    await ContactModel.upsert(
+                        {
+                            sessionId: this.sessionId,
+                            id: val.id,
+                            name: val.name,
+                            notify: val.notify,
+                            verifiedName: val.verifiedName,
+                            imgUrl: val.imgUrl,
+                            status: val.status,
+                        },
+                        {
+                            conflictWhere: {
+                                sessionId: this.sessionId,
+                                id: val.id,
+                            },
+                        }
+                    );
                 }
             );
-            await PromiseM.any([
-                ...upsertPromises,
-                await ContactModel.destroy({
-                    where: {
-                        id: {
-                            [Op.in]: deleteOldContactIds,
-                        },
-                    },
-                }),
-            ]);
+            // await PromiseM.any([
+            //     ...upsertPromises,
+            //     await ContactModel.destroy({
+            //         where: {
+            //             id: {
+            //                 [Op.in]: deleteOldContactIds,
+            //             },
+            //             sessionId: this.sessionId,
+            //         },
+            //     }),
+            // ]);
             console.log(
                 chalk.greenBright.bold(
-                    {
+                    "[contacts.set] ",
+                    JSON.stringify({
                         deletedContacts: deleteOldContactIds.length,
                         newContacts: arg.contacts.length,
-                    },
+                    }),
                     "Synced contacts"
                 )
             );
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[contacts.set] ", e));
         }
     };
 }

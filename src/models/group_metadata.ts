@@ -16,7 +16,7 @@ class GroupMetadata extends Model {
     declare sessionId: string;
     declare id: string;
     declare owner: string | null;
-    declare subject: string | null;
+    declare subject: string;
     declare subjectOwner: string | null;
     declare subjectTime: number | null;
     declare creation: number | null;
@@ -28,7 +28,6 @@ class GroupMetadata extends Model {
     declare size: number | null;
     declare participants: any | null;
     declare ephemeralDuration: number | null;
-    declare inviteCode: string | null;
 
     public static options: InitOptions = {
         sequelize,
@@ -68,6 +67,7 @@ class GroupMetadata extends Model {
         },
         subject: {
             type: DataTypes.INTEGER,
+            allowNull: false,
         },
         subjectOwner: {
             type: DataTypes.INTEGER,
@@ -101,9 +101,6 @@ class GroupMetadata extends Model {
         },
         ephemeralDuration: {
             type: DataTypes.INTEGER,
-        },
-        inviteCode: {
-            type: DataTypes.STRING,
         },
     };
 

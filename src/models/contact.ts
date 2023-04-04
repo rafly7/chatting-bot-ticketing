@@ -15,11 +15,11 @@ class Contact extends Model {
     declare pkId: number;
     declare sessionId: string;
     declare id: string | null;
+    declare imgUrl: string | null;
     declare name: string | null;
     declare notify: string | null;
-    declare verifiedName: string | null;
-    declare imgUrl: string | null;
     declare status: string | null;
+    declare verifiedName: string | null;
 
     public static options: InitOptions = {
         sequelize,

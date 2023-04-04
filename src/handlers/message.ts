@@ -10,23 +10,13 @@ import {
 } from "@adiwajshing/baileys";
 
 import { proto } from "@adiwajshing/baileys";
-import type { BaileysEventHandler, MessageSet } from "./types";
+import type { BaileysEventHandler, MessageSet, MessageUpsert } from "./types";
 
 import Message from "../models/message";
 import chalk from "chalk";
 import Chat from "../models/chat";
 import { Sequelize, Op } from "sequelize";
 import config from "../configs/conf";
-
-type MessageUpsert = {
-    messages: proto.IWebMessageInfo[];
-    type: MessageUpsertType;
-};
-
-// type MessageSet = {
-//     messages: proto.IWebMessageInfo[];
-//     isLatest: boolean;
-// };
 
 const sequelize: Sequelize = config.DATABASE;
 
@@ -37,16 +27,24 @@ class MessageHandler {
     constructor(sessionId: string, event: BaileysEventEmitter) {
         this.sessionId = sessionId;
         this.event = event;
-        this.init();
     }
 
-    private init() {
+    public listen() {
         this.event.on("messages.upsert", this.upsert);
         this.event.on("messages.set", this.set);
         this.event.on("messages.update", this.update);
         this.event.on("messages.delete", this.del);
         this.event.on("message-receipt.update", this.updateReceipt);
         this.event.on("messages.reaction", this.updateReaction);
+    }
+
+    public unlisten() {
+        this.event.off("messages.upsert", this.upsert);
+        this.event.off("messages.set", this.set);
+        this.event.off("messages.update", this.update);
+        this.event.off("messages.delete", this.del);
+        this.event.off("message-receipt.update", this.updateReceipt);
+        this.event.off("messages.reaction", this.updateReaction);
     }
 
     private getKeyAuthor = (key: WAMessageKey | undefined | null) =>
@@ -117,10 +115,17 @@ class MessageHandler {
                         verifiedBizName: val.verifiedBizName,
                     });
                 }
-                await Message.bulkCreate(pushData, { transaction: t });
+                const data = await Message.bulkCreate(pushData, {
+                    transaction: t,
+                });
+                console.log(
+                    chalk.greenBright.bold(
+                        `[message.set] ${data.length} Synced messages`
+                    )
+                );
             });
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[messages.set] ", e));
         }
     };
 
@@ -133,60 +138,71 @@ class MessageHandler {
                 for (const message of mu.messages) {
                     try {
                         const jid = jidNormalizedUser(message.key.remoteJid!);
-                        await Message.upsert({
-                            sessionId: this.sessionId,
-                            remoteJid: jid,
-                            id: message.key.id!,
-                            agentId: message.agentId,
-                            bizPrivacyStatus: message.bizPrivacyStatus,
-                            broadcast: message.broadcast,
-                            clearMedia: message.clearMedia,
-                            duration: message.duration,
-                            ephemeralDuration: message.ephemeralDuration,
-                            ephemeralOffToOn: message.ephemeralOffToOn,
-                            ephemeralOutOfSync: message.ephemeralOutOfSync,
-                            ephemeralStartTimestamp:
-                                message.ephemeralStartTimestamp,
-                            finalLiveLocation: message.finalLiveLocation,
-                            futureproofData: message.futureproofData,
-                            ignore: message.ignore,
-                            keepInChat: message.keepInChat,
-                            key: message.key,
-                            labels: message.labels,
-                            mediaCiphertextSha256:
-                                message.mediaCiphertextSha256,
-                            mediaData: message.mediaData,
-                            message: message.message,
-                            messageC2STimestamp: message.messageC2STimestamp,
-                            messageSecret: message.messageSecret,
-                            messageStubParameters:
-                                message.messageStubParameters,
-                            messageStubType: message.messageStubType,
-                            messageTimestamp: message.messageTimestamp,
-                            multicast: message.multicast,
-                            originalSelfAuthorUserJidString:
-                                message.originalSelfAuthorUserJidString,
-                            participant: message.participant,
-                            paymentInfo: message.paymentInfo,
-                            photoChange: message.photoChange,
-                            pollAdditionalMetadata:
-                                message.pollAdditionalMetadata,
-                            pollUpdates: message.pollUpdates,
-                            pushName: message.pushName,
-                            quotedPaymentInfo: message.quotedPaymentInfo,
-                            quotedStickerData: message.quotedStickerData,
-                            reactions: message.reactions,
-                            revokeMessageTimestamp:
-                                message.revokeMessageTimestamp,
-                            starred: message.starred,
-                            status: message.status,
-                            statusAlreadyViewed: message.statusAlreadyViewed,
-                            statusPsa: message.statusPsa,
-                            urlNumber: message.urlNumber,
-                            urlText: message.urlText,
-                            userReceipt: message.userReceipt,
-                            verifiedBizName: message.verifiedBizName,
-                        });
+                        await Message.upsert(
+                            {
+                                sessionId: this.sessionId,
+                                remoteJid: jid,
+                                id: message.key.id!,
+                                agentId: message.agentId,
+                                bizPrivacyStatus: message.bizPrivacyStatus,
+                                broadcast: message.broadcast,
+                                clearMedia: message.clearMedia,
+                                duration: message.duration,
+                                ephemeralDuration: message.ephemeralDuration,
+                                ephemeralOffToOn: message.ephemeralOffToOn,
+                                ephemeralOutOfSync: message.ephemeralOutOfSync,
+                                ephemeralStartTimestamp:
+                                    message.ephemeralStartTimestamp,
+                                finalLiveLocation: message.finalLiveLocation,
+                                futureproofData: message.futureproofData,
+                                ignore: message.ignore,
+                                keepInChat: message.keepInChat,
+                                key: message.key,
+                                labels: message.labels,
+                                mediaCiphertextSha256:
+                                    message.mediaCiphertextSha256,
+                                mediaData: message.mediaData,
+                                message: message.message,
+                                messageC2STimestamp:
+                                    message.messageC2STimestamp,
+                                messageSecret: message.messageSecret,
+                                messageStubParameters:
+                                    message.messageStubParameters,
+                                messageStubType: message.messageStubType,
+                                messageTimestamp: message.messageTimestamp,
+                                multicast: message.multicast,
+                                originalSelfAuthorUserJidString:
+                                    message.originalSelfAuthorUserJidString,
+                                participant: message.participant,
+                                paymentInfo: message.paymentInfo,
+                                photoChange: message.photoChange,
+                                pollAdditionalMetadata:
+                                    message.pollAdditionalMetadata,
+                                pollUpdates: message.pollUpdates,
+                                pushName: message.pushName,
+                                quotedPaymentInfo: message.quotedPaymentInfo,
+                                quotedStickerData: message.quotedStickerData,
+                                reactions: message.reactions,
+                                revokeMessageTimestamp:
+                                    message.revokeMessageTimestamp,
+                                starred: message.starred,
+                                status: message.status,
+                                statusAlreadyViewed:
+                                    message.statusAlreadyViewed,
+                                statusPsa: message.statusPsa,
+                                urlNumber: message.urlNumber,
+                                urlText: message.urlText,
+                                userReceipt: message.userReceipt,
+                                verifiedBizName: message.verifiedBizName,
+                            },
+                            {
+                                conflictWhere: {
+                                    sessionId: this.sessionId,
+                                    remoteJid: jid,
+                                    id: message.key.id,
+                                },
+                            }
+                        );
 
                         const chatExists =
                             (await Chat.count({
@@ -204,11 +220,9 @@ class MessageHandler {
                             ]);
                         }
                     } catch (e) {
-                        console.log(chalk.redBright.bold(e));
-                        // logger!.error(
-                        //     e,
-                        //     "An error occured during message upsert"
-                        // );
+                        console.log(
+                            chalk.redBright.bold("[messages.upsert] ", e)
+                        );
                     }
                 }
                 break;
@@ -227,11 +241,13 @@ class MessageHandler {
                             remoteJid: key.remoteJid,
                             sessionId: this.sessionId,
                         },
+                        transaction: t,
                     });
                     if (!prevData) {
                         return console.log(
                             chalk.redBright.bold(
-                                { update },
+                                "[messages.update] ",
+                                JSON.stringify(update),
                                 "Got update for non existent message"
                             )
                         );
@@ -305,7 +321,7 @@ class MessageHandler {
                     );
                 });
             } catch (e) {
-                console.log(chalk.redBright.bold(e));
+                console.log(chalk.redBright.bold("[messages.update] ", e));
             }
         }
     };
@@ -341,7 +357,7 @@ class MessageHandler {
                 },
             });
         } catch (e) {
-            console.log(chalk.redBright.bold(e));
+            console.log(chalk.redBright.bold("[messages.delete] ", e));
         }
     };
 
@@ -362,8 +378,9 @@ class MessageHandler {
                         if (!message) {
                             return console.log(
                                 chalk.redBright.bold(
-                                    { datas },
-                                    "Got receipt update for non existent message"
+                                    "[message-receipt.update] ",
+                                    key.remoteJid,
+                                    " Got receipt update for non existent message"
                                 )
                             );
                         }
@@ -396,11 +413,14 @@ class MessageHandler {
                                     remoteJid: key.remoteJid,
                                     id: key.id,
                                 },
+                                transaction: t,
                             }
                         );
                     });
                 } catch (e) {
-                    console.log(chalk.redBright.bold(e));
+                    console.log(
+                        chalk.redBright.bold("[message-receipt.update] ", e)
+                    );
                 }
             }
         };
@@ -426,6 +446,8 @@ class MessageHandler {
                     if (!message) {
                         return console.log(
                             chalk.redBright.bold(
+                                "[messages.reaction] ",
+                                key.remoteJid,
                                 "Got reaction update for non existent message"
                             )
                         );
@@ -453,13 +475,10 @@ class MessageHandler {
                     );
                 });
             } catch (e) {
-                console.log(chalk.redBright.bold(e));
+                console.log(chalk.redBright.bold("[messages.reaction] ", e));
             }
         }
     };
-
-    static listen(sessionId: string, event: BaileysEventEmitter) {}
-    static unlisten(sessionId: string, event: BaileysEventEmitter) {}
 }
 
 export default MessageHandler;

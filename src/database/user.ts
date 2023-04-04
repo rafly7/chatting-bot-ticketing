@@ -12,15 +12,15 @@ class User extends Model {
     declare JID: string;
 }
 
-User.init(
-    {
-        JID: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-    },
-    { sequelize, tableName: "Users" }
-);
+// User.init(
+//     {
+//         JID: {
+//             type: DataTypes.STRING,
+//             allowNull: false,
+//         },
+//     },
+//     { sequelize, tableName: "Users" }
+// );
 
 async function addUser(jid: string | null = null) {
     await User.findOrCreate({

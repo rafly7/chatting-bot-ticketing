@@ -15,24 +15,24 @@ class Auth extends Model<InferAttributes<Auth>, InferCreationAttributes<Auth>> {
     declare type: string;
 }
 
-Auth.init(
-    {
-        key: {
-            type: DataTypes.STRING(1000000),
-            allowNull: false,
-        },
-        value: {
-            type: DataTypes.STRING(1000000),
-        },
-        type: {
-            type: DataTypes.STRING(1000000),
-        },
-    },
-    {
-        sequelize,
-        tableName: "Authentication",
-        timestamps: false,
-    }
-);
+// Auth.init(
+//     {
+//         key: {
+//             type: DataTypes.STRING(1000000),
+//             allowNull: false,
+//         },
+//         value: {
+//             type: DataTypes.STRING(1000000),
+//         },
+//         type: {
+//             type: DataTypes.STRING(1000000),
+//         },
+//     },
+//     {
+//         sequelize,
+//         tableName: "Authentication",
+//         timestamps: false,
+//     }
+// );
 
 export { Auth };
