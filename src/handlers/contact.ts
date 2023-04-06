@@ -15,13 +15,13 @@ class ContactHandler {
     }
 
     public listen() {
-        this.event.on("contacts.set", this.set);
+        this.event.on("messaging-history.set", this.set);
         this.event.on("contacts.update", this.update);
         this.event.on("contacts.upsert", this.upsert);
     }
 
     public unlisten() {
-        this.event.off("contacts.set", this.set);
+        this.event.off("messaging-history.set", this.set);
         this.event.off("contacts.update", this.update);
         this.event.off("contacts.upsert", this.upsert);
     }
@@ -82,12 +82,12 @@ class ContactHandler {
         }
     };
 
-    private set: BaileysEventHandler<"contacts.set"> = async (arg: {
-        contacts: Contact[];
-        isLatest: boolean;
+    private set: BaileysEventHandler<"messaging-history.set"> = async ({
+        contacts,
+        isLatest,
     }): Promise<void> => {
         try {
-            const contactIds = arg.contacts.map((val: Contact) => val.id);
+            const contactIds = contacts.map((val: Contact) => val.id);
             const deleteOldContactIds = (
                 await ContactModel.findAll({
                     where: {
@@ -100,8 +100,8 @@ class ContactHandler {
             ).map((val: ContactModel) => val.id);
 
             const upsertPromises = await PromiseM.map(
-                arg.contacts,
-                async (val) => {
+                contacts,
+                async (val: Contact) => {
                     await ContactModel.upsert(
                         {
                             sessionId: this.sessionId,
@@ -137,7 +137,7 @@ class ContactHandler {
                     "[contacts.set] ",
                     JSON.stringify({
                         deletedContacts: deleteOldContactIds.length,
-                        newContacts: arg.contacts.length,
+                        newContacts: contacts.length,
                     }),
                     "Synced contacts"
                 )

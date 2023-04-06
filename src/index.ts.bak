@@ -18,9 +18,7 @@ if (process.env.APP_NAME) {
                 parseInt(process.env.HOST_LISTEN),
                 async function () {
                     await sequelize.sync();
-                    const waSess = new WASession();
-                    waSess.initPlugin();
-                    await waSess.initDatabase();
+                    await new WASession().init();
                     if (server.listening) {
                         console.log(
                             chalk.greenBright.bold(

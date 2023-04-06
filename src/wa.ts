@@ -58,268 +58,47 @@ const logger: Logger = P({
 }).child({});
 logger.level = "error";
 
-// the store maintains the data of the WA connection in memory
-// can be written out to a file & read from it
-// const store = makeInMemoryStore({ logger });
-// store?.readFromFile("./session.data.json");
-// save every 10s
-// setInterval(() => {
-//     store?.writeToFile("./session.data.json");
-// }, 10_000);
-
-// (async (): Promise<void> => {
-//     // console.log(banner);
-
-//     let commandHandler: Map<string, Command> = new Map();
-
-//     console.log(
-//         chalk.yellowBright.bold("[INFO] Installing Plugins... Please wait.")
-//     );
-//     let moduleFiles: string[] = fs
-//         .readdirSync(join(__dirname, "modules"))
-//         .filter((file) => file.endsWith(".js"));
-//     for (let file of moduleFiles) {
-//         try {
-//             const command: Command = require(join(
-//                 __dirname,
-//                 "modules",
-//                 `${file}`
-//             ));
-//             console.log(
-//                 chalk.magentaBright("[INFO] Successfully imported module"),
-//                 chalk.cyanBright.bold(`${file}`)
-//             );
-//             commandHandler.set(command.name, command);
-//         } catch (error) {
-//             console.log(
-//                 chalk.blueBright.bold("[INFO] Could not import module"),
-//                 chalk.redBright.bold(`${file}`)
-//             );
-//             console.log(`[ERROR] `, error);
-//             continue;
-//         }
-//     }
-//     console.log(
-//         chalk.green.bold(
-//             "[INFO] Plugins Installed Successfully. The bot is ready to use."
-//         )
-//     );
-//     console.log(chalk.yellowBright.bold("[INFO] Connecting to Database."));
-//     try {
-//         await sequelize.authenticate();
-//         console.log(
-//             chalk.greenBright.bold(
-//                 "[INFO] Connection has been established successfully."
-//             )
-//         );
-//     } catch (error) {
-//         console.error("[ERROR] Unable to connect to the database:", error);
-//     }
-//     console.log(chalk.yellowBright.bold("[INFO] Syncing Database..."));
-//     await sequelize.sync();
-//     console.log(
-//         chalk.greenBright.bold(
-//             "[INFO] All models were synchronized successfully."
-//         )
-//     );
-
-//     await sequelize.sync();
-//     console.log(
-//         chalk.greenBright.bold(
-//             "[INFO] All models were synchronized successfully."
-//         )
-//     );
-
-//     let firstInit: boolean = true;
-
-//     const startSock = async () => {
-//         // @ts-ignore
-//         // const { state, saveCreds } = await useMultiFileAuthState(
-//         //     "auth_info_baileys_deleted"
-//         // );
-//         // const { state, saveCreds } = await useRemoteFileAuthState();
-//         const { state, saveCreds } = await useSession("rafly");
-//         const { version, isLatest } = await fetchLatestBaileysVersion();
-//         console.log(">>>ISLATEST>>>");
-//         console.log(isLatest);
-//         console.log(version);
-//         console.log(">>>ISLATEST>>>");
-//         const sock: WASocket = makeWASocket({
-//             version,
-//             logger,
-//             printQRInTerminal: true,
-//             auth: state,
-//             browser: ["Samantha-Ticketing", "Chrome", "4.0.0"],
-//             msgRetryCounterMap,
-//             // implement to handle retries
-//             getMessage: async (key: proto.IMessageKey) => {
-//                 const data = await Message.findOne({
-//                     where: {
-//                         id: key.id,
-//                         remoteJid: key.remoteJid,
-//                         sessionId: "rafly",
-//                     },
-//                 });
-
-//                 return (data?.message || undefined) as
-//                     | proto.IMessage
-//                     | undefined;
-//             },
-//         });
-
-//         // store?.bind(sock.ev);
-
-//         let client: Client = new Client(sock, null);
-//         new HandlersSock("rafly", sock.ev).listen();
-
-//         sock.ev.process(async (events) => {
-//             //         console.log(">>>>>>11>>>>>>>");
-//             //         console.log(events);
-//             //         console.log(">>>>>>22>>>>>>>");
-//             if (events["connection.update"]) {
-//                 const update = events["connection.update"];
-//                 const { connection, lastDisconnect } = update;
-//                 if (connection === "close") {
-//                     if (
-//                         (lastDisconnect?.error as Boom)?.output?.statusCode !==
-//                         DisconnectReason.loggedOut
-//                     ) {
-//                         startSock();
-//                     } else {
-//                         // await fsProm.unlink(join("BotsApp.sqlite"));
-//                         // await fsProm.unlink(join("session.data.json"));
-//                         new HandlersSock("rafly", sock.ev).unlisten();
-//                         await Session.drop();
-//                         await Message.drop();
-//                         await Chat.drop();
-//                         await GroupMetadata.drop();
-//                         await Contact.drop();
-//                         console.log(
-//                             chalk.redBright(
-//                                 "Connection closed. You are logged out. Delete the BotsApp.db and session.data.json files to rescan the code."
-//                             )
-//                         );
-//                         process.exit(0);
-//                     }
-//                 } else if (connection === "connecting") {
-//                     console.log(
-//                         chalk.yellowBright("[INFO] Connecting to WhatsApp...")
-//                     );
-//                 } else if (connection === "open") {
-//                     console.log(
-//                         chalk.greenBright.bold(
-//                             "[INFO] Connected! Welcome to BotsApp"
-//                         )
-//                     );
-//                 }
-//             }
-//             if (events["creds.update"]) {
-//                 await saveCreds();
-//             }
-//             if (events["messages.upsert"]) {
-//                 const upsert = events["messages.upsert"];
-//                 // console.log(JSON.stringify(upsert, undefined, 2));
-//                 if (upsert.type !== "notify") {
-//                     return;
-//                 }
-//                 for (const msg of upsert.messages) {
-//                     let chat: proto.IWebMessageInfo = msg;
-//                     console.log(msg);
-//                     let BotsApp: BotsApp = await resolve(chat, sock);
-//                     console.log(BotsApp);
-//                     if (BotsApp.isCmd) {
-//                         let isBlacklist: boolean =
-//                             await Blacklist.getBlacklistUser(
-//                                 BotsApp.sender!,
-//                                 BotsApp.chatId!
-//                             );
-//                         const cleared: boolean | void = await clearance(
-//                             BotsApp,
-//                             client,
-//                             isBlacklist
-//                         );
-//                         if (!cleared) {
-//                             return;
-//                         }
-//                         const reactionMessage = {
-//                             react: {
-//                                 text: "🪄",
-//                                 key: chat.key,
-//                             },
-//                         };
-//                         await sock.sendMessage(
-//                             chat!.key!.remoteJid!,
-//                             reactionMessage
-//                         );
-//                         console.log(
-//                             chalk.redBright.bold(
-//                                 `[INFO] ${BotsApp.commandName} command executed.`
-//                             )
-//                         );
-//                         const command = commandHandler.get(
-//                             BotsApp.commandName!
-//                         );
-//                         let args = BotsApp.body?.trim().split(/\s+/).slice(1);
-//                         console.log(args);
-//                         if (!command) {
-//                             client.sendMessage(
-//                                 BotsApp.chatId!,
-//                                 "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
-//                                 MessageType.text
-//                             );
-//                             return;
-//                         } else if (command && BotsApp.commandName == "help") {
-//                             try {
-//                                 command.handle(
-//                                     client,
-//                                     chat,
-//                                     BotsApp,
-//                                     args,
-//                                     commandHandler
-//                                 );
-//                                 return;
-//                             } catch (err) {
-//                                 console.log(chalk.red("[ERROR] ", err));
-//                                 return;
-//                             }
-//                         }
-//                         try {
-//                             await command
-//                                 .handle(client, chat, BotsApp, args)
-//                                 .catch((err: any) =>
-//                                     console.log("[ERROR] " + err)
-//                                 );
-//                         } catch (err) {
-//                             console.log(chalk.red("[ERROR] ", err));
-//                         }
-//                     }
-//                 }
-//             }
-//         });
-
-//         return sock;
-//     };
-
-//     startSock();
-//     process.on("SIGINT", async function () {
-//         console.log("Caught interrupt signal");
-//         // await fsProm.unlink("BotsApp.sqlite");
-//         // await fsProm.unlink("session.data.json");
-//         // await Session.drop();
-//         // await Greeting.drop();
-//         // await Message.drop();
-//         // await Chat.drop();
-//         // await GroupMetadata.drop();
-//         // await Contact.drop();
-//         process.exit();
-//     });
-// })().catch((err) => console.log("[MAINERROR] : %s", chalk.redBright.bold(err)));
-
 const sessions = new Map<string, SessionWA>();
 const retries = new Map<string, number>();
+const commandHandler: Map<string, Command> = new Map();
 
 class WASession {
-    public async init() {
+    public initPlugin() {
+        console.log(
+            chalk.yellowBright.bold("[INFO] Installing Plugins... Please wait.")
+        );
+        let moduleFiles: string[] = fs
+            .readdirSync(join(__dirname, "modules"))
+            .filter((file) => file.endsWith(".js"));
+        for (let file of moduleFiles) {
+            try {
+                const command: Command = require(join(
+                    __dirname,
+                    "modules",
+                    `${file}`
+                ));
+                console.log(
+                    chalk.magentaBright("[INFO] Successfully imported module"),
+                    chalk.cyanBright.bold(`${file}`)
+                );
+                commandHandler.set(command.name, command);
+            } catch (error) {
+                console.log(
+                    chalk.blueBright.bold("[INFO] Could not import module"),
+                    chalk.redBright.bold(`${file}`)
+                );
+                console.log(`[ERROR] `, error);
+                continue;
+            }
+        }
+        console.log(
+            chalk.green.bold(
+                "[INFO] Plugins Installed Successfully. The bot is ready to use."
+            )
+        );
+    }
+
+    public async initDatabase() {
         const sessions = await Session.findAll({
             where: {
                 id: {
@@ -330,7 +109,7 @@ class WASession {
         });
         for (const { sessionId, data } of sessions) {
             const { readIncomingMessages, ...socketConfig } = JSON.parse(data);
-            this.createSession({
+            await this.createSession({
                 sessionId,
                 readIncomingMessages,
                 socketConfig,
@@ -358,9 +137,11 @@ class WASession {
             socketConfig,
         } = options;
         const configID = `${Util.SESSION_CONFIG_ID}-${sessionId}`;
-        // let connectionState: Partial<ConnectionState> = { connection: "close" };
         const { state, saveCreds } = await useSession("rafly");
         const { version, isLatest } = await fetchLatestBaileysVersion();
+        console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
+        console.log(chalk.cyanBright.bold(version));
+        console.log(chalk.cyanBright.bold(isLatest));
         console.log(chalk.cyanBright.bold(JSON.stringify(socketConfig)));
         this.socket = makeWASocket({
             version,
@@ -370,6 +151,26 @@ class WASession {
             browser: ["Samantha-Ticketing", "Chrome", "4.0.0"],
             msgRetryCounterMap,
             ...socketConfig,
+            patchMessageBeforeSending(message, recipientJids) {
+                const requiresPatch = !!(
+                    message.buttonsMessage || message.listMessage
+                );
+
+                if (requiresPatch) {
+                    message = {
+                        viewOnceMessage: {
+                            message: {
+                                messageContextInfo: {
+                                    deviceListMetadataVersion: 2,
+                                    deviceListMetadata: {},
+                                },
+                                ...message,
+                            },
+                        },
+                    };
+                }
+                return message;
+            },
             // implement to handle retries
             getMessage: async (key: proto.IMessageKey) => {
                 const data = await Message.findOne({
@@ -408,11 +209,80 @@ class WASession {
                 // SSEQRGenerations.delete(sessionId);
             }
             if (connection === "close") {
-                this.handleConnectionClose(options);
+                await this.handleConnectionClose(options);
             }
             await this.handleNormalConnectionUpdate(res!, options.sessionId);
         });
 
+        let client: Client = new Client(this.socket, null);
+        this.socket?.ev.process(async (events) => {
+            if (events["messages.upsert"]) {
+                const upsert = events["messages.upsert"];
+                // console.log(JSON.stringify(upsert, undefined, 2));
+                if (upsert.type !== "notify") {
+                    return;
+                }
+                for (const msg of upsert.messages) {
+                    let chat: proto.IWebMessageInfo = msg;
+                    console.log(chalk.yellowBright.bold(msg));
+                    let BotsApp: BotsApp = await resolve(chat, this.socket!);
+                    console.log(chalk.yellowBright.bold(BotsApp));
+                    if (BotsApp.isCmd) {
+                        const reactionMessage = {
+                            react: {
+                                text: "🪄",
+                                key: chat.key,
+                            },
+                        };
+                        await this.socket?.sendMessage(
+                            chat!.key!.remoteJid!,
+                            reactionMessage
+                        );
+                        console.log(
+                            chalk.redBright.bold(
+                                `[INFO] ${BotsApp.commandName} command executed.`
+                            )
+                        );
+                        const command = commandHandler.get(
+                            BotsApp.commandName!
+                        );
+                        let args = BotsApp.body?.trim().split(/\s+/).slice(1);
+                        // console.log(args);
+                        if (!command) {
+                            await client.sendMessage(
+                                BotsApp.chatId!,
+                                "```Woops, invalid command! Use```  *.help*  ```to display the command list.```",
+                                MessageType.text
+                            );
+                            return;
+                        } else if (command && BotsApp.commandName == "help") {
+                            try {
+                                command.handle(
+                                    client,
+                                    chat,
+                                    BotsApp,
+                                    args,
+                                    commandHandler
+                                );
+                                return;
+                            } catch (err) {
+                                console.log(chalk.red("[ERROR] ", err));
+                                return;
+                            }
+                        }
+                        try {
+                            await command
+                                .handle(client, chat, BotsApp, args)
+                                .catch((err: any) =>
+                                    console.log("[ERROR] " + err)
+                                );
+                        } catch (err) {
+                            console.log(chalk.red("[ERROR] ", err));
+                        }
+                    }
+                }
+            }
+        });
         if (readIncomingMessages) {
             this.socket.ev.on("messages.upsert", async (m) => {
                 const message = m.messages[0];
@@ -536,7 +406,7 @@ class WASession {
                     res.status(500).json({ error: "Unable to generate QR" });
                 }
             }
-            this.destroy(true, sessionId);
+            await this.destroy(true, sessionId);
         }
     };
 

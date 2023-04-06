@@ -351,7 +351,7 @@ const data = {
         DESCRIPTION: "Module to tag evryone in a group.",
         EXTENDED_DESCRIPTION:
             "```Use this module to tag everyone in the group by either replying to a message or simply using```  *.tagall*  ```command.```",
-        TAG_MESSAGE: "*Everyone!*",
+        TAG_MESSAGE: "",
     },
     // ud: {
     //     DESCRIPTION: "Urban Dictionary",

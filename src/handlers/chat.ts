@@ -18,26 +18,26 @@ class ChatHandler {
     }
 
     public listen() {
-        this.event.on("chats.set", this.set);
+        this.event.on("messaging-history.set", this.set);
         this.event.on("chats.upsert", this.upsert);
         this.event.on("chats.update", this.update);
         this.event.on("chats.delete", this.delete);
     }
 
     public unlisten() {
-        this.event.off("chats.set", this.set);
+        this.event.off("messaging-history.set", this.set);
         this.event.off("chats.upsert", this.upsert);
         this.event.off("chats.update", this.update);
         this.event.off("chats.delete", this.delete);
     }
 
-    private set: BaileysEventHandler<"chats.set"> = async (ms: {
-        chats: Chat[];
-        isLatest: boolean;
+    private set: BaileysEventHandler<"messaging-history.set"> = async ({
+        chats,
+        isLatest,
     }): Promise<void> => {
         try {
             await sequelize.transaction(async (t) => {
-                if (ms.isLatest)
+                if (isLatest)
                     ChatM.destroy({
                         where: {
                             sessionId: this.sessionId,
@@ -50,20 +50,19 @@ class ChatHandler {
                         where: {
                             sessionId: this.sessionId,
                             id: {
-                                [Op.in]: ms.chats.map((c: Chat) => c.id),
+                                [Op.in]: chats.map((c: Chat) => c.id),
                             },
                         },
                         transaction: t,
                     })
                 ).map((val: ChatM) => val.id);
                 const pushData: any[] = [];
-                const dts = ms.chats.filter(
+                const dts = chats.filter(
                     (c: Chat) => !existingIds.includes(c.id)
                 );
                 for (const dt of dts) {
                     pushData.push({
                         sessionId: this.sessionId,
-                        archive: dt.archive,
                         archived: dt.archived,
                         contactPrimaryIdentityKey: dt.contactPrimaryIdentityKey,
                         conversationTimestamp: dt.conversationTimestamp,
@@ -79,11 +78,12 @@ class ChatHandler {
                         id: dt.id,
                         isDefaultSubgroup: dt.isDefaultSubgroup,
                         isParentGroup: dt.isParentGroup,
+                        lastMessageRecvTimestamp: dt.lastMessageRecvTimestamp,
                         lastMsgTimestamp: dt.lastMsgTimestamp,
+                        lidJid: dt.lidJid,
                         markedAsUnread: dt.markedAsUnread,
                         mediaVisibility: dt.mediaVisibility,
                         messages: dt.messages,
-                        mute: dt.mute,
                         muteEndTime: dt.muteEndTime,
                         name: dt.name,
                         newJid: dt.newJid,
@@ -92,11 +92,11 @@ class ChatHandler {
                         pHash: dt.pHash,
                         parentGroupId: dt.parentGroupId,
                         participant: dt.participant,
-                        pin: dt.pin,
                         pinned: dt.pinned,
                         pnJid: dt.pnJid,
+                        pnhDuplicateLidThread: dt.pnhDuplicateLidThread,
                         readOnly: dt.readOnly,
-                        selfPnExposed: dt.selfPnExposed,
+                        shareOwnPn: dt.shareOwnPn,
                         support: dt.support,
                         suspended: dt.suspended,
                         tcToken: dt.tcToken,
@@ -132,7 +132,6 @@ class ChatHandler {
                 await ChatM.upsert(
                     {
                         sessionId: this.sessionId,
-                        archive: val.archive,
                         archived: val.archived,
                         contactPrimaryIdentityKey:
                             val.contactPrimaryIdentityKey,
@@ -150,11 +149,12 @@ class ChatHandler {
                         id: val.id,
                         isDefaultSubgroup: val.isDefaultSubgroup,
                         isParentGroup: val.isParentGroup,
+                        lastMessageRecvTimestamp: val.lastMessageRecvTimestamp,
                         lastMsgTimestamp: val.lastMsgTimestamp,
+                        lidJid: val.lidJid,
                         markedAsUnread: val.markedAsUnread,
                         mediaVisibility: val.mediaVisibility,
                         messages: val.messages,
-                        mute: val.mute,
                         muteEndTime: val.muteEndTime,
                         name: val.name,
                         newJid: val.newJid,
@@ -163,11 +163,11 @@ class ChatHandler {
                         pHash: val.pHash,
                         parentGroupId: val.parentGroupId,
                         participant: val.participant,
-                        pin: val.pin,
                         pinned: val.pinned,
                         pnJid: val.pnJid,
+                        pnhDuplicateLidThread: val.pnhDuplicateLidThread,
                         readOnly: val.readOnly,
-                        selfPnExposed: val.selfPnExposed,
+                        shareOwnPn: val.shareOwnPn,
                         support: val.support,
                         suspended: val.suspended,
                         tcToken: val.tcToken,
@@ -199,7 +199,6 @@ class ChatHandler {
                 await ChatM.update(
                     {
                         sessionId: this.sessionId,
-                        archive: update.archive,
                         archived: update.archived,
                         contactPrimaryIdentityKey:
                             update.contactPrimaryIdentityKey,
@@ -218,11 +217,13 @@ class ChatHandler {
                         id: update.id,
                         isDefaultSubgroup: update.isDefaultSubgroup,
                         isParentGroup: update.isParentGroup,
+                        lastMessageRecvTimestamp:
+                            update.lastMessageRecvTimestamp,
                         lastMsgTimestamp: update.lastMsgTimestamp,
+                        lidJid: update.lidJid,
                         markedAsUnread: update.markedAsUnread,
                         mediaVisibility: update.mediaVisibility,
                         messages: update.messages,
-                        mute: update.mute,
                         muteEndTime: update.muteEndTime,
                         name: update.name,
                         newJid: update.newJid,
@@ -231,11 +232,11 @@ class ChatHandler {
                         pHash: update.pHash,
                         parentGroupId: update.parentGroupId,
                         participant: update.participant,
-                        pin: update.pin,
                         pinned: update.pinned,
                         pnJid: update.pnJid,
+                        pnhDuplicateLidThread: update.pnhDuplicateLidThread,
                         readOnly: update.readOnly,
-                        selfPnExposed: update.selfPnExposed,
+                        shareOwnPn: update.shareOwnPn,
                         support: update.support,
                         suspended: update.suspended,
                         tcToken: update.tcToken,

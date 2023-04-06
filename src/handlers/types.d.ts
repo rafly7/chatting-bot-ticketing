@@ -14,6 +14,8 @@ export type MessageUpsert = {
 };
 
 export type MessageSet = {
+    chats: Chat[];
+    contacts: Contact[];
     messages: proto.IWebMessageInfo[];
     isLatest: boolean;
 };

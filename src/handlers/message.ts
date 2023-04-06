@@ -31,7 +31,7 @@ class MessageHandler {
 
     public listen() {
         this.event.on("messages.upsert", this.upsert);
-        this.event.on("messages.set", this.set);
+        this.event.on("messaging-history.set", this.set);
         this.event.on("messages.update", this.update);
         this.event.on("messages.delete", this.del);
         this.event.on("message-receipt.update", this.updateReceipt);
@@ -40,7 +40,7 @@ class MessageHandler {
 
     public unlisten() {
         this.event.off("messages.upsert", this.upsert);
-        this.event.off("messages.set", this.set);
+        this.event.off("messaging-history.set", this.set);
         this.event.off("messages.update", this.update);
         this.event.off("messages.delete", this.del);
         this.event.off("message-receipt.update", this.updateReceipt);
@@ -50,12 +50,13 @@ class MessageHandler {
     private getKeyAuthor = (key: WAMessageKey | undefined | null) =>
         (key?.fromMe ? "me" : key?.participant || key?.remoteJid) || "";
 
-    private set: BaileysEventHandler<"messages.set"> = async (
-        ms: MessageSet
-    ): Promise<void> => {
+    private set: BaileysEventHandler<"messaging-history.set"> = async ({
+        messages,
+        isLatest,
+    }): Promise<void> => {
         try {
             await sequelize.transaction(async (t) => {
-                if (ms.isLatest) {
+                if (isLatest) {
                     await Message.destroy({
                         where: {
                             sessionId: this.sessionId,
@@ -64,7 +65,7 @@ class MessageHandler {
                     });
                 }
                 const pushData: any[] = [];
-                for (const val of ms.messages) {
+                for (const val of messages) {
                     pushData.push({
                         sessionId: this.sessionId,
                         remoteJid: val.key.remoteJid,

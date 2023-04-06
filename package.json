@@ -8,10 +8,10 @@
         "build": "rimraf ./dist && tsc",
         "start": "npm run build && node --max-old-space-size=512 --optimize_for_size dist/index.js"
     },
-    "author": "Prince Mendiratta",
+    "author": "Rafly Dipoe A",
     "license": "ISC",
     "dependencies": {
-        "@adiwajshing/baileys": "^4.4.0",
+        "@adiwajshing/baileys": "^5.0.0",
         "@adiwajshing/keyed-db": "^0.2.4",
         "@nuintun/qrcode": "^3.0.1",
         "@vitalets/google-translate-api": "^7.0.0",
