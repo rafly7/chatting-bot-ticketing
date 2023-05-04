@@ -1,4 +1,4 @@
-import translate from "@vitalets/google-translate-api";
+import { translate } from "@vitalets/google-translate-api";
 import inputSanitization from "../sidekick/input-sanitization";
 import STRINGS from "../lib/db";
 import format from "string-format";
@@ -14,12 +14,19 @@ module.exports = {
     demo: {
         isEnabled: true,
         text: [
-            ".tr やめてください",
-            ".tr how are you | hindi",
-            ".tr how are you | hi",
+            ".tr how are you | id",
+            ".tr sopo iki | id",
+            ".tr apa kabar senang berjumpa denganmu | en",
+            ".tr halo senang berkenalan dengan mu | english",
+            ".tr 元気ですか",
         ],
     },
-    async handle(client: Client, chat: proto.IWebMessageInfo, BotsApp: BotsApp, args: string[]): Promise<void> {
+    async handle(
+        client: Client,
+        chat: proto.IWebMessageInfo,
+        BotsApp: BotsApp,
+        args: string[]
+    ): Promise<void> {
         const processing = await client.sendMessage(
             BotsApp.chatId,
             STRINGS.tr.PROCESSING,
@@ -29,11 +36,15 @@ module.exports = {
             var text = "";
             var language = "";
             if (args.length == 0) {
-                await client.sendMessage(
-                    BotsApp.chatId,
-                    STRINGS.tr.EXTENDED_DESCRIPTION,
-                    MessageType.text
-                ).catch(err => inputSanitization.handleError(err, client, BotsApp));
+                await client
+                    .sendMessage(
+                        BotsApp.chatId,
+                        STRINGS.tr.EXTENDED_DESCRIPTION,
+                        MessageType.text
+                    )
+                    .catch((err) =>
+                        inputSanitization.handleError(err, client, BotsApp)
+                    );
                 return await client.deleteMessage(BotsApp.chatId, {
                     id: processing.key.id,
                     remoteJid: BotsApp.chatId,
@@ -65,11 +76,15 @@ module.exports = {
                 text = BotsApp.replyMessage;
                 language = args[0];
             } else {
-                await client.sendMessage(
-                    BotsApp.chatId,
-                    STRINGS.tr.INVALID_REPLY,
-                    MessageType.text
-                ).catch(err => inputSanitization.handleError(err, client, BotsApp));
+                await client
+                    .sendMessage(
+                        BotsApp.chatId,
+                        STRINGS.tr.INVALID_REPLY,
+                        MessageType.text
+                    )
+                    .catch((err) =>
+                        inputSanitization.handleError(err, client, BotsApp)
+                    );
                 return await client.deleteMessage(BotsApp.chatId, {
                     id: processing.key.id,
                     remoteJid: BotsApp.chatId,
@@ -77,11 +92,15 @@ module.exports = {
                 });
             }
             if (text.length > 4000) {
-                await client.sendMessage(
-                    BotsApp.chatId,
-                    format(STRINGS.tr.TOO_LONG, String(text.length)),
-                    MessageType.text
-                ).catch(err => inputSanitization.handleError(err, client, BotsApp));
+                await client
+                    .sendMessage(
+                        BotsApp.chatId,
+                        format(STRINGS.tr.TOO_LONG, String(text.length)),
+                        MessageType.text
+                    )
+                    .catch((err) =>
+                        inputSanitization.handleError(err, client, BotsApp)
+                    );
                 return await client.deleteMessage(BotsApp.chatId, {
                     id: processing.key.id,
                     remoteJid: BotsApp.chatId,
@@ -91,12 +110,14 @@ module.exports = {
             await translate(text, {
                 to: language,
             })
-                .then((res) => {
-                    client.sendMessage(
+                .then(async (res) => {
+                    console.log("???????????????????");
+                    console.log(res);
+                    await client.sendMessage(
                         BotsApp.chatId,
                         format(
                             STRINGS.tr.SUCCESS,
-                            res.from.language.iso,
+                            res.raw.src,
                             language,
                             res.text
                         ),

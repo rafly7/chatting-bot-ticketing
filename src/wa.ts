@@ -16,40 +16,33 @@ import makeWASocket, {
     delay,
 } from "@adiwajshing/baileys";
 // @ts-ignore
-import { useRemoteFileAuthState } from "./core/dbAuth";
 import fs from "fs";
 import { join } from "path";
 import config from "./configs/conf";
 import { banner } from "./lib/banner";
 import chalk from "chalk";
-// import Greetings from "./database/greeting";
 import STRINGS from "./lib/db";
-import Blacklist from "./database/blacklist";
-import clearance from "./core/clearance";
-import { start } from "repl";
-import format from "string-format";
 import resolve from "./core/helper";
-import { CreateOptions, Op, Sequelize } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import Command from "./sidekick/command";
 import BotsApp from "./sidekick/sidekick";
 import Client from "./sidekick/client";
 import { MessageType } from "./sidekick/message-type";
-import fsProm from "fs/promises";
 import Message from "./models/message";
 import { useSession } from "./core/session";
 import Session from "./models/session";
-import { Greeting } from "./database/greeting";
-import Handlers from "./handlers/handlers";
 import HandlersSock from "./handlers/handlers";
 import Chat from "./models/chat";
 import GroupMetadata from "./models/group_metadata";
 import Contact from "./models/contact";
 import { SessionWA, createSessionOptions } from "./types/session";
 import { Response } from "express";
-// import { useSession } from "./core/session";
 import { toDataURL } from "qrcode";
 import Util from "./utils/util";
 import { WebSocket } from "ws";
+import Axios from "axios";
+import path from "path";
+
 const sequelize: Sequelize = config.DATABASE;
 const GENERAL: any = STRINGS.general;
 const msgRetryCounterMap: MessageRetryMap = {};
@@ -64,6 +57,7 @@ const commandHandler: Map<string, Command> = new Map();
 
 class WASession {
     public initPlugin() {
+        console.log(chalk.rgb(195, 85, 36).bold(banner));
         console.log(
             chalk.yellowBright.bold("[INFO] Installing Plugins... Please wait.")
         );
@@ -137,18 +131,20 @@ class WASession {
             socketConfig,
         } = options;
         const configID = `${Util.SESSION_CONFIG_ID}-${sessionId}`;
-        const { state, saveCreds } = await useSession("rafly");
+        const { state, saveCreds } = await useSession(sessionId);
         const { version, isLatest } = await fetchLatestBaileysVersion();
         console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
-        console.log(chalk.cyanBright.bold(version));
-        console.log(chalk.cyanBright.bold(isLatest));
-        console.log(chalk.cyanBright.bold(JSON.stringify(socketConfig)));
+        console.log(socketConfig);
+        console.log(sessionId);
+        // console.log(chalk.cyanBright.bold(version));
+        // console.log(chalk.cyanBright.bold(isLatest));
+        // console.log(chalk.cyanBright.bold(JSON.stringify(socketConfig)));
         this.socket = makeWASocket({
             version,
             logger,
             printQRInTerminal: true,
             auth: state,
-            browser: ["Samantha-Ticketing", "Chrome", "4.0.0"],
+            browser: ["Athegine", "Chrome", "4.0.0"],
             msgRetryCounterMap,
             ...socketConfig,
             patchMessageBeforeSending(message, recipientJids) {
@@ -195,11 +191,22 @@ class WASession {
             // destroy: this.destroy,
         });
 
-        console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
-        console.log(chalk.cyanBright.bold(sessions.get(sessionId)));
-        console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
-
+        // console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
+        // console.log(chalk.cyanBright.bold(sessions.get(sessionId)));
+        // console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
         this.socket.ev.on("creds.update", saveCreds);
+        // this.socket.ev.on("creds.update", async () => {
+        //     const name = "Athegine";
+        //     await this.socket.updateProfileName(name);
+        //     // state.keys.get]
+        // });
+        const getData = await Session.findOne({
+            where: {
+                sessionId: sessionId,
+                id: "creds",
+            },
+            raw: true,
+        });
         this.socket.ev.on("connection.update", async (update) => {
             this.connectionState = update;
             const { connection } = update;
@@ -224,9 +231,9 @@ class WASession {
                 }
                 for (const msg of upsert.messages) {
                     let chat: proto.IWebMessageInfo = msg;
-                    console.log(msg);
+                    // console.log(msg);
                     let BotsApp: BotsApp = await resolve(chat, this.socket!);
-                    console.log(BotsApp);
+                    // console.log(BotsApp);
                     if (BotsApp.isCmd) {
                         const reactionMessage = {
                             react: {
@@ -238,11 +245,81 @@ class WASession {
                             chat!.key!.remoteJid!,
                             reactionMessage
                         );
-                        console.log(
-                            chalk.redBright.bold(
-                                `[INFO] ${BotsApp.commandName} command executed.`
-                            )
-                        );
+                        if (BotsApp.body === ".profile") {
+                            if (getData !== null) {
+                                if (getData.data) {
+                                    const dataObj = JSON.parse(getData.data);
+                                    if (typeof dataObj === "object") {
+                                        if (dataObj.me.id) {
+                                            try {
+                                                await client.sock.updateProfileName(
+                                                    "Athegine"
+                                                );
+                                                await client.sock.updateProfilePicture(
+                                                    jidNormalizedUser(
+                                                        dataObj.me.id
+                                                    ),
+                                                    {
+                                                        url: path.join(
+                                                            "assets",
+                                                            "bot_change.png"
+                                                        ),
+                                                    }
+                                                );
+                                            } catch (e: any) {
+                                                console.log(e);
+                                                await client.sendMessage(
+                                                    BotsApp.chatId,
+                                                    "Maaf telah terjadi kesalahan silahkan coba lagi",
+                                                    MessageType.text
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return;
+                        }
+                        if (BotsApp.body === ".profile revert") {
+                            if (getData !== null) {
+                                if (getData.data) {
+                                    const dataObj = JSON.parse(getData.data);
+                                    if (typeof dataObj === "object") {
+                                        if (dataObj.me.id) {
+                                            try {
+                                                await client.sock.updateProfileName(
+                                                    "Rafly.D.A"
+                                                );
+                                                await client.sock.updateProfilePicture(
+                                                    jidNormalizedUser(
+                                                        dataObj.me.id
+                                                    ),
+                                                    {
+                                                        url: path.join(
+                                                            "assets",
+                                                            "original.png"
+                                                        ),
+                                                    }
+                                                );
+                                            } catch (e: any) {
+                                                console.log(e);
+                                                await client.sendMessage(
+                                                    BotsApp.chatId,
+                                                    "Maaf telah terjadi kesalahan silahkan coba lagi",
+                                                    MessageType.text
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return;
+                        }
+                        // console.log(
+                        //     chalk.redBright.bold(
+                        //         `[INFO] ${BotsApp.commandName} command executed.`
+                        //     )
+                        // );
                         const command = commandHandler.get(
                             BotsApp.commandName!
                         );
@@ -279,6 +356,32 @@ class WASession {
                         } catch (err) {
                             console.log(chalk.red("[ERROR] ", err));
                         }
+                    } else if (
+                        BotsApp.isCmd === false &&
+                        BotsApp.isGroup === false &&
+                        BotsApp.type == "text"
+                    ) {
+                        await Axios.post(
+                            "https://7861-2407-6ac0-3-5-3333-3333-e4f-1.ngrok-free.app/message",
+                            {
+                                message: BotsApp.body,
+                                user_id: BotsApp.sender,
+                            }
+                        )
+                            .then(async (res) => {
+                                await client.sendMessage(
+                                    BotsApp.chatId!,
+                                    res.data.data.message,
+                                    MessageType.text
+                                );
+                            })
+                            .catch(async (err) => {
+                                await client.sendMessage(
+                                    BotsApp.chatId!,
+                                    "Maaf terjadi kesalahan",
+                                    MessageType.text
+                                );
+                            });
                     }
                 }
             }

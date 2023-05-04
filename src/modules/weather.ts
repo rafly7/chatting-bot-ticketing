@@ -16,11 +16,7 @@ module.exports = {
     extendedDescription: WEATHER.EXTENDED_DESCRIPTION,
     demo: {
         isEnabled: true,
-        text: [
-            ".weather New Delhi",
-            ".weather New Delhi tomorrow",
-            ".weather New Delhi tom",
-        ],
+        text: [".weather Jakarta", ".weather Jakarta tomorrow"],
     },
     async handle(
         client: Client,

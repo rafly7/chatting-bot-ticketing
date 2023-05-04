@@ -9,7 +9,6 @@
         "rootDir": "src",
         "outDir": "dist",
         "types": ["node"],
-        "strict": true,
         "skipLibCheck": true
     },
     "lib": ["es2015"],
