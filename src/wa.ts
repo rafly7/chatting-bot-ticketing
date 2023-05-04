@@ -133,9 +133,9 @@ class WASession {
         const configID = `${Util.SESSION_CONFIG_ID}-${sessionId}`;
         const { state, saveCreds } = await useSession(sessionId);
         const { version, isLatest } = await fetchLatestBaileysVersion();
-        console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
-        console.log(socketConfig);
-        console.log(sessionId);
+        // console.log(chalk.cyanBright.bold(">>>>>>>>>>>>"));
+        // console.log(socketConfig);
+        // console.log(sessionId);
         // console.log(chalk.cyanBright.bold(version));
         // console.log(chalk.cyanBright.bold(isLatest));
         // console.log(chalk.cyanBright.bold(JSON.stringify(socketConfig)));
