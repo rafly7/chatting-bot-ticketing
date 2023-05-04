@@ -224,9 +224,9 @@ class WASession {
                 }
                 for (const msg of upsert.messages) {
                     let chat: proto.IWebMessageInfo = msg;
-                    console.log(chalk.yellowBright.bold(msg));
+                    console.log(msg);
                     let BotsApp: BotsApp = await resolve(chat, this.socket!);
-                    console.log(chalk.yellowBright.bold(BotsApp));
+                    console.log(BotsApp);
                     if (BotsApp.isCmd) {
                         const reactionMessage = {
                             react: {
